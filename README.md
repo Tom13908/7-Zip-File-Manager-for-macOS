@@ -210,7 +210,7 @@ LSR=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.
 
 ## 实现说明
 
-界面、本地化与构建脚本通过**DeepSeek-V4.1-Flash** 完成；引擎 `7zz` 为  
+界面、i18n与构建脚本通过**DeepSeek-V4.1-Flash** 完成；引擎 `7zz` 为  
 7-Zip 官方源码原样编译，未经修改。
 
 ## 致谢
