@@ -1,0 +1,449 @@
+{
+ "engine": "7-Zip 26.03",
+ "formats": {
+  "7z": [
+   "7z"
+  ],
+  "APFS": [
+   "apfs",
+   "img"
+  ],
+  "APM": [
+   "apm"
+  ],
+  "Ar": [
+   "ar"
+  ],
+  "Arj": [
+   "arj"
+  ],
+  "Base64": [
+   "b64"
+  ],
+  "COFF": [
+   "obj"
+  ],
+  "Cab": [
+   "cab"
+  ],
+  "Chm": [
+   "chm",
+   "chi",
+   "chq",
+   "chw"
+  ],
+  "Compound": [
+   "msi",
+   "msp",
+   "msm",
+   "doc",
+   "xls",
+   "ppt",
+   "aaf"
+  ],
+  "Cpio": [
+   "cpio"
+  ],
+  "CramFS": [
+   "cramfs"
+  ],
+  "Dmg": [
+   "dmg"
+  ],
+  "ELF": [
+   "elf"
+  ],
+  "Ext": [
+   "ext",
+   "ext2",
+   "ext3",
+   "ext4",
+   "img"
+  ],
+  "FAT": [
+   "fat",
+   "img"
+  ],
+  "FLV": [
+   "flv"
+  ],
+  "GPT": [
+   "gpt",
+   "mbr"
+  ],
+  "HFS": [
+   "hfs",
+   "hfsx"
+  ],
+  "Hash": [
+   "sha256",
+   "sha512",
+   "sha384",
+   "sha224",
+   "sha512-224",
+   "sha512-256",
+   "sha3-224",
+   "sha3-256",
+   "sha3-384",
+   "sha3-512",
+   "sha1",
+   "sha2",
+   "sha3",
+   "sha",
+   "md5",
+   "blake2s",
+   "blake2b",
+   "blake2sp",
+   "xxh64",
+   "crc32",
+   "crc64",
+   "cksum",
+   "asc"
+  ],
+  "Hxs": [
+   "hxs",
+   "hxi",
+   "hxr",
+   "hxq",
+   "hxw",
+   "lit"
+  ],
+  "IHex": [
+   "ihex"
+  ],
+  "Iso": [
+   "iso",
+   "img"
+  ],
+  "LP": [
+   "lpimg",
+   "img"
+  ],
+  "Lzh": [
+   "lzh",
+   "lha"
+  ],
+  "MBR": [
+   "mbr"
+  ],
+  "MachO": [
+   "macho"
+  ],
+  "MsLZ": [
+   "mslz"
+  ],
+  "Mub": [
+   "mub"
+  ],
+  "NTFS": [
+   "ntfs",
+   "img"
+  ],
+  "Nsis": [
+   "nsis"
+  ],
+  "PE": [
+   "exe",
+   "dll",
+   "sys"
+  ],
+  "Ppmd": [
+   "pmd"
+  ],
+  "QCOW": [
+   "qcow",
+   "qcow2",
+   "qcow2c"
+  ],
+  "Rar": [
+   "rar",
+   "r00"
+  ],
+  "Rar5": [
+   "rar",
+   "r00"
+  ],
+  "Rpm": [
+   "rpm"
+  ],
+  "SWF": [
+   "swf"
+  ],
+  "SWFc": [
+   "swf"
+  ],
+  "Sparse": [
+   "simg",
+   "img"
+  ],
+  "Split": [
+   "001"
+  ],
+  "SquashFS": [
+   "squashfs"
+  ],
+  "TE": [
+   "te"
+  ],
+  "UEFIc": [
+   "scap"
+  ],
+  "UEFIf": [
+   "uefif"
+  ],
+  "Udf": [
+   "udf",
+   "iso",
+   "img"
+  ],
+  "VDI": [
+   "vdi"
+  ],
+  "VHD": [
+   "vhd"
+  ],
+  "VHDX": [
+   "vhdx",
+   "avhdx"
+  ],
+  "VMDK": [
+   "vmdk"
+  ],
+  "Xar": [
+   "xar",
+   "pkg",
+   "xip"
+  ],
+  "Z": [
+   "z",
+   "taz"
+  ],
+  "bzip2": [
+   "bz2",
+   "bzip2",
+   "tbz2"
+  ],
+  "gzip": [
+   "gz",
+   "gzip",
+   "tgz"
+  ],
+  "lzma": [
+   "lzma"
+  ],
+  "lzma86": [
+   "lzma86"
+  ],
+  "tar": [
+   "tar",
+   "ova"
+  ],
+  "wim": [
+   "wim",
+   "swm",
+   "esd",
+   "ppkg"
+  ],
+  "xz": [
+   "xz",
+   "txz"
+  ],
+  "zip": [
+   "zip",
+   "z01",
+   "zipx",
+   "jar",
+   "xpi",
+   "odt",
+   "ods",
+   "docx",
+   "xlsx",
+   "epub",
+   "ipa",
+   "apk",
+   "appx"
+  ],
+  "zstd": [
+   "zst",
+   "tzst"
+  ]
+ },
+ "extensions": [
+  "001",
+  "7z",
+  "apfs",
+  "apk",
+  "appx",
+  "ar",
+  "arj",
+  "avhdx",
+  "bz2",
+  "bzip2",
+  "cab",
+  "chi",
+  "chm",
+  "chq",
+  "chw",
+  "cpio",
+  "dmg",
+  "doc",
+  "docx",
+  "epub",
+  "esd",
+  "ext",
+  "ext2",
+  "ext3",
+  "ext4",
+  "fat",
+  "gz",
+  "gzip",
+  "hfs",
+  "hfsx",
+  "hxi",
+  "hxq",
+  "hxr",
+  "hxs",
+  "hxw",
+  "img",
+  "ipa",
+  "iso",
+  "jar",
+  "lha",
+  "lpimg",
+  "lzh",
+  "lzma",
+  "lzma86",
+  "msi",
+  "mslz",
+  "msm",
+  "msp",
+  "mub",
+  "nsis",
+  "ntfs",
+  "ods",
+  "odt",
+  "ova",
+  "pkg",
+  "pmd",
+  "ppt",
+  "qcow",
+  "qcow2",
+  "qcow2c",
+  "r00",
+  "rar",
+  "rpm",
+  "swm",
+  "tar",
+  "taz",
+  "tbz2",
+  "tgz",
+  "txz",
+  "tzst",
+  "udf",
+  "uefif",
+  "vhd",
+  "vhdx",
+  "vmdk",
+  "wim",
+  "xar",
+  "xip",
+  "xls",
+  "xlsx",
+  "xpi",
+  "xz",
+  "z",
+  "z01",
+  "zip",
+  "zipx",
+  "zst"
+ ],
+ "byExt": {
+  "001": "split",
+  "7z": "7z",
+  "apfs": "apfs",
+  "apk": "zip",
+  "appx": "zip",
+  "ar": "7z",
+  "arj": "arj",
+  "avhdx": "7z",
+  "bz2": "bz2",
+  "bzip2": "7z",
+  "cab": "cab",
+  "chi": "7z",
+  "chm": "7z",
+  "chq": "7z",
+  "chw": "7z",
+  "cpio": "cpio",
+  "dmg": "dmg",
+  "doc": "zip",
+  "docx": "zip",
+  "epub": "zip",
+  "esd": "wim",
+  "ext": "7z",
+  "ext2": "7z",
+  "ext3": "7z",
+  "ext4": "7z",
+  "fat": "fat",
+  "gz": "gz",
+  "gzip": "7z",
+  "hfs": "hfs",
+  "hfsx": "hfs",
+  "hxi": "7z",
+  "hxq": "7z",
+  "hxr": "7z",
+  "hxs": "7z",
+  "hxw": "7z",
+  "img": "iso",
+  "ipa": "zip",
+  "iso": "iso",
+  "jar": "zip",
+  "lha": "lzh",
+  "lpimg": "7z",
+  "lzh": "lzh",
+  "lzma": "lzma",
+  "lzma86": "7z",
+  "msi": "cab",
+  "mslz": "7z",
+  "msm": "7z",
+  "msp": "7z",
+  "mub": "7z",
+  "nsis": "7z",
+  "ntfs": "ntfs",
+  "ods": "zip",
+  "odt": "zip",
+  "ova": "tar",
+  "pkg": "xar",
+  "pmd": "7z",
+  "ppt": "zip",
+  "qcow": "7z",
+  "qcow2": "7z",
+  "qcow2c": "7z",
+  "r00": "rar",
+  "rar": "rar",
+  "rpm": "rpm",
+  "swm": "wim",
+  "tar": "tar",
+  "taz": "z",
+  "tbz2": "tar",
+  "tgz": "tar",
+  "txz": "tar",
+  "tzst": "7z",
+  "udf": "7z",
+  "uefif": "7z",
+  "vhd": "vhd",
+  "vhdx": "7z",
+  "vmdk": "vhd",
+  "wim": "wim",
+  "xar": "xar",
+  "xip": "xar",
+  "xls": "zip",
+  "xlsx": "zip",
+  "xpi": "zip",
+  "xz": "xz",
+  "z": "z",
+  "z01": "zip",
+  "zip": "zip",
+  "zipx": "zip",
+  "zst": "zst"
+ }
+}

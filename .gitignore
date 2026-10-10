@@ -1,0 +1,13 @@
+# 构建产物：App、universal 二进制、DMG、打包用的 venv、临时卷
+build/
+
+# 7-Zip 官方源码。由 scripts/fetch-source.sh 下载官方 tar.xz 并校验 SHA256，
+# 不签入仓库；里面还混着本机编译产生的 _o / _o_arm64 / _o_x64。
+vendor/
+
+# 截图：早期那批的地址栏与「主路径」显示的是本机路径，08-hidden-off 还整列了主目录
+# 内容，所以整批排除。README 用的配图是按中性目录重拍的，放在 images/。
+screenshots/
+
+# macOS
+.DS_Store
