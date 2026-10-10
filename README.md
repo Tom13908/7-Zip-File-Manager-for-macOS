@@ -1,6 +1,8 @@
 # 7-Zip for macOS
 
-macOS 上的 7-Zip 图形前端，原生 AppKit，直接复用官方 `7zz` 引擎。
+一个极度精简的macOS 7-Zip客户端。
+
+macOS 上的 7-Zip 图形前端，原生 AppKit，直接复用官方 `7zz` 引擎，GUI设计和操作体验还原Windows版的官方7-Zip File Manager。
 
 7-Zip 官方在 macOS 只提供命令行（`7zz`）。本项目为其实现原生 AppKit 界面，交互沿用  
 Windows 版 7-Zip File Manager —— 工具栏布局、功能键（`F3` / `F4` 等）与之一致。  
@@ -41,7 +43,6 @@ CRC32、CRC64、SHA-1、SHA-256、BLAKE2sp 等校验值；文件比较；分割�
 ## 系统要求
 
 - macOS 13.0 或更高。
-- Apple Silicon 与 Intel 均有原生切片（App 与引擎均为 universal 二进制），Intel 机器无需 Rosetta。
 
 ## 安装
 
