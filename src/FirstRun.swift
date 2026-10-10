@@ -92,31 +92,15 @@ enum DefaultAppOffer {
         }
         guard !types.isEmpty else { return }
 
-        let app = Bundle.main.bundleURL
-        let ws = NSWorkspace.shared
-        let group = DispatchGroup()
-        let lock = NSLock()
-        var failed: [String] = []
-
-        for t in types {
-            group.enter()
-            ws.setDefaultApplication(at: app, toOpen: t) { error in
-                if let error {
-                    NSLog("7zip: 设置 \(t.identifier) 的默认打开程序失败：\(error)")
-                    lock.lock()
-                    failed.append("\(t.identifier): \(error.localizedDescription)")
-                    lock.unlock()
-                }
-                group.leave()
-            }
-        }
+        // 设置这一步不走 NSWorkspace.setDefaultApplication —— 那条路会给每个 UTI
+        // 弹一次系统确认框。原因和替代做法见 DefaultHandlerWriter 的注释。
+        let bundleID = Bundle.main.bundleIdentifier ?? "org.7-zip.FileManager"
+        let r = DefaultHandlerWriter.set(contentTypes: types.map { $0.identifier }, to: bundleID)
 
         // 失败要说话：静默失败会让用户以为已经设好了。
-        group.notify(queue: .main) {
-            guard !failed.isEmpty else { return }
-            DialogKit.alert("7-Zip",
-                            failed.sorted().joined(separator: "\n"),
-                            style: .warning, parent: nil)
+        if let error = r.error {
+            NSLog("7zip: 写默认打开方式失败：\(error)")
+            DialogKit.alert("7-Zip", S.defaultAppFailed, style: .warning, parent: nil)
         }
     }
 }

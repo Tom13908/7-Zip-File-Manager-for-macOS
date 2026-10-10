@@ -53,10 +53,14 @@ if titles.isEmpty {
     let w = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 200, height: 100),
                      styleMask: [.titled], backing: .buffered, defer: false)
     let v = w.contentView!
-    Timer.scheduledTimer(withTimeInterval: 0.6, repeats: false) { _ in
+    // 定时器必须挂到 .common 上。弹菜单进的是 NSEventTrackingRunLoopMode 的事件循环，
+    // 挂在默认模式上的定时器在里面不触发 —— cancelTracking() 就永远等不到，
+    // 本工具会一直停在菜单跟踪里（屏幕上菜单一直开着，要人工按 Esc 才退）。
+    let cancel = Timer(timeInterval: 0.6, repeats: false) { _ in
         titles = collect(servicesMenu)
         servicesMenu.cancelTracking()
     }
+    RunLoop.current.add(cancel, forMode: .common)
     servicesMenu.popUp(positioning: nil,
                        at: NSPoint(x: 20, y: 20), in: v)
     RunLoop.current.run(until: Date().addingTimeInterval(1.0))

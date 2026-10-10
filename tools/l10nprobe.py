@@ -204,7 +204,15 @@ def check_services_menu(bundle: pathlib.Path, system_lang) -> int:
         return 0
 
     want = read_strings(L10N / f"{system_lang}.strings") if system_lang else {}
-    out = subprocess.run([str(titles_bin), ""], capture_output=True, text=True).stdout
+    # serviceslist 是把「服务」菜单真弹出来读标题的，读完靠菜单被关掉才退出 ——
+    # 没人管它就永远停在菜单跟踪的事件循环里。给个上限，把无限挂起变成一句报错。
+    try:
+        out = subprocess.run([str(titles_bin), ""], capture_output=True, text=True,
+                             timeout=120).stdout
+    except subprocess.TimeoutExpired:
+        print("服务菜单（系统级）：列出服务菜单超时（菜单弹出后没被关掉？"
+              "按一下 Esc 或点一下别处，再跑一次）")
+        return 1
     listed = out.splitlines()
 
     # 同一个服务如果还有别的副本在提供，系统会给它加一个「 (App 名)」后缀做区分

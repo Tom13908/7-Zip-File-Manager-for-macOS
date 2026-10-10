@@ -71,6 +71,7 @@
 "Copy To..." = "コピー...";
 "Copying..." = "コピーしています...";
 "Copyright (C) 1999-2026 Igor Pavlov" = "Copyright (C) 1999-2026 Igor Pavlov";
+"Could not set the default app. In Finder, use Get Info → Open with → Change All to set it by hand." = "既定のアプリに設定できませんでした。Finder の「情報を見る」→「このアプリケーションで開く」→「すべてを変更」で設定してください。";
 "Create File" = "新しいファイルの作成";
 "Create Folder" = "新しいフォルダーの作成";
 "Create SFX archive" = "自己展開アーカイブの作成";

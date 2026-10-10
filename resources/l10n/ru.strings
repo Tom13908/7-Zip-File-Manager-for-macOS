@@ -71,6 +71,7 @@
 "Copy To..." = "Копировать в...";
 "Copying..." = "Копирование...";
 "Copyright (C) 1999-2026 Igor Pavlov" = "Copyright (C) 1999-2026 Igor Pavlov";
+"Could not set the default app. In Finder, use Get Info → Open with → Change All to set it by hand." = "Не удалось назначить приложение по умолчанию. Это можно сделать в Finder: «Свойства» → «Открыть в программе» → «Изменить всё».";
 "Create File" = "Создать Файл";
 "Create Folder" = "Создать Папку";
 "Create SFX archive" = "Создать SFX-архив";

@@ -71,6 +71,7 @@
 "Copy To..." = "복사...";
 "Copying..." = "복사 중...";
 "Copyright (C) 1999-2026 Igor Pavlov" = "Copyright (C) 1999-2026 Igor Pavlov";
+"Could not set the default app. In Finder, use Get Info → Open with → Change All to set it by hand." = "기본 앱으로 설정하지 못했습니다. Finder의 '정보 가져오기' → '다음으로 열기' → '모두 변경'에서 설정하십시오.";
 "Create File" = "파일 만들기";
 "Create Folder" = "폴더 만들기";
 "Create SFX archive" = "자동(SFX) 압축파일 생성";

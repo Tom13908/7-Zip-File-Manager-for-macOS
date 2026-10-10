@@ -71,6 +71,7 @@
 "Copy To..." = "复制到...";
 "Copying..." = "正在复制...";
 "Copyright (C) 1999-2026 Igor Pavlov" = "Copyright (C) 1999-2026 Igor Pavlov";
+"Could not set the default app. In Finder, use Get Info → Open with → Change All to set it by hand." = "无法设置默认打开方式。可以在访达里用「显示简介 → 打开方式 → 全部更改」手动设置。";
 "Create File" = "新建文件";
 "Create Folder" = "新建文件夹";
 "Create SFX archive" = "创建自解压程序";

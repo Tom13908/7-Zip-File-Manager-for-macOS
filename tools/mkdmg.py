@@ -31,11 +31,15 @@ BG_DIR = ".background"
 
 BG_TOP = (250, 250, 252)
 BG_BOTTOM = (238, 238, 242)
-ARROW_COLOR = (170, 172, 178)
+
+# 箭头是窗口里唯一的提示：从 App 指向 Applications，告诉用户把左边拖到右边。
+# 画得粗一些、颜色实一些 —— 之前那版又细又淡，在一张浅色背景上几乎看不见。
+# 两端各留 14pt 空隙，正好贴住两个图标（图标 128pt、中心 150 / 490）。
+ARROW_COLOR = (146, 149, 157)
 ARROW_Y = 190
-ARROW_X0, ARROW_X1 = 246, 392
-ARROW_THICK = 9
-ARROW_HEAD_W, ARROW_HEAD_H = 30, 30
+ARROW_X0, ARROW_X1 = 228, 412
+ARROW_THICK = 14
+ARROW_HEAD_W, ARROW_HEAD_H = 44, 44
 
 
 # ---------------------------------------------------------------- 背景图

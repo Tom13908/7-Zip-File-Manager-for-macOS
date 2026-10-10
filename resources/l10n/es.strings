@@ -71,6 +71,7 @@
 "Copy To..." = "Copiar a...";
 "Copying..." = "Copiando...";
 "Copyright (C) 1999-2026 Igor Pavlov" = "Copyright (C) 1999-2026 Igor Pavlov";
+"Could not set the default app. In Finder, use Get Info → Open with → Change All to set it by hand." = "No se pudo establecer la aplicación predeterminada. Use en el Finder «Información» → «Abrir con» → «Cambiar todo».";
 "Create File" = "Crear archivo";
 "Create Folder" = "Crear carpeta";
 "Create SFX archive" = "Crear archivo comprimido SFX";

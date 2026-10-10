@@ -41,8 +41,13 @@ cp "$BUNDLE/Contents/Info.plist" "$SVCAPP/Contents/Info.plist"
                          -c 'Set :CFBundleName serviceslist' \
                          -c 'Delete :NSServices' \
                          -c 'Delete :NSDocumentTypes' \
+                         -c 'Delete :CFBundleDocumentTypes' \
+                         -c 'Delete :UTExportedTypeDeclarations' \
                          -c 'Delete :CFBundleIconFile' \
                          "$SVCAPP/Contents/Info.plist" >/dev/null 2>&1 || true
+# 这两个键必须删掉：留着它就会在 LaunchServices 里注册成归档类型的候选打开程序，
+# 于是访达的「打开方式」多出一个 build/ 里的 serviceslist。它只是来读菜单的，
+# 不该参与打开文件。（NSServices/NSDocumentTypes 是旧键，顺手一起删。）
 
 rc=0
 skipped=""

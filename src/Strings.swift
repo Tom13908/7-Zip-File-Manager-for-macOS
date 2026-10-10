@@ -413,6 +413,10 @@ enum S {
         L("Choose the file types you want 7-Zip to open. Disk images are off by default — macOS mounts those when you double-click them.")
     }
 
+    static var defaultAppFailed: String {
+        L("Could not set the default app. In Finder, use Get Info → Open with → Change All to set it by hand.")
+    }
+
     // MARK: 使用说明（Help -> Contents）
     //
     // 这一段是多行长文，键名用 "help.text"，英文原文放在下面的常量里兜底。
