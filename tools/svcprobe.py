@@ -65,9 +65,8 @@ def trigger(service, *files):
 def fixture():
     shutil.rmtree(FIX, ignore_errors=True)
     os.makedirs(os.path.join(FIX, "payload"))
-    for n, text in (("one.txt", "aaa"), ("two.txt", "bbb")):
-        with open(os.path.join(FIX, n), "w") as f:
-            f.write(text)
+    with open(os.path.join(FIX, "one.txt"), "w") as f:
+        f.write("aaa")
     with open(os.path.join(FIX, "payload", "inner.txt"), "w") as f:
         f.write("inner")
     # 只有单个顶层目录：智能解压应当把它整体摊到压缩包所在目录
@@ -78,11 +77,27 @@ def fixture():
         f.write("solo")
     subprocess.run([SZZ, "a", os.path.join(FIX, "single.7z"), "solo.txt", "-bso0", "-bsp0"],
                    cwd=FIX, check=True)
-    # 多个顶层项：智能解压应当新建一个与压缩包同名的文件夹
-    subprocess.run([SZZ, "a", os.path.join(FIX, "multi.7z"), "one.txt", "two.txt",
+    # 多个顶层项、全是文件：智能解压不包 —— 直接摊在压缩包所在目录。
+    # 名字要和留在 fixture 里的 one.txt 错开，否则解出来是覆盖同名文件，
+    # 目录列表看不出变化，这条用例就永远都能「通过」。
+    for n in ("m1.txt", "m2.txt"):
+        with open(os.path.join(FIX, n), "w") as f:
+            f.write("multi")
+    subprocess.run([SZZ, "a", os.path.join(FIX, "multi.7z"), "m1.txt", "m2.txt",
+                    "-bso0", "-bsp0"], cwd=FIX, check=True)
+    # 多个顶层项、其中有目录：智能解压要新建一个与压缩包同名的文件夹
+    for d in ("d1", "d2"):
+        os.makedirs(os.path.join(FIX, d))
+        with open(os.path.join(FIX, d, "inner.txt"), "w") as f:
+            f.write(d)
+    subprocess.run([SZZ, "a", os.path.join(FIX, "dirs.7z"), "d1", "d2",
                     "-bso0", "-bsp0"], cwd=FIX, check=True)
     shutil.rmtree(os.path.join(FIX, "payload"))
     os.remove(os.path.join(FIX, "solo.txt"))
+    for n in ("m1.txt", "m2.txt"):
+        os.remove(os.path.join(FIX, n))
+    for d in ("d1", "d2"):
+        shutil.rmtree(os.path.join(FIX, d))
     with open(os.path.join(FIX, "plain.bin"), "w") as f:
         f.write("definitely not an archive")
 
@@ -193,8 +208,10 @@ def main():
     case("Extract (Smart) 单目录", "Extract (Smart)", ["test.7z"], ["payload"])
     #   单个文件 -> 直接落在压缩包所在目录
     case("Extract (Smart) 单文件", "Extract (Smart)", ["single.7z"], ["solo.txt"])
-    #   多个顶层项 -> 新建一个与压缩包同名的文件夹
-    case("Extract (Smart) 多项", "Extract (Smart)", ["multi.7z"], ["multi"])
+    #   多个顶层项、全是文件 -> 摊在压缩包所在目录，不新建文件夹
+    case("Extract (Smart) 多项全是文件", "Extract (Smart)", ["multi.7z"], ["m1.txt", "m2.txt"])
+    #   多个顶层项、其中有目录 -> 新建一个与压缩包同名的文件夹
+    case("Extract (Smart) 多项含目录", "Extract (Smart)", ["dirs.7z"], ["dirs"])
 
     # 弹出解压对话框（目标路径自己在对话框里选）
     case("Extract to…", "Extract to…", ["test.7z"], [], need_window=True)

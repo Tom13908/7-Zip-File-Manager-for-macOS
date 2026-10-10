@@ -23,12 +23,35 @@ enum Res {
 }
 
 // MARK: - 归档类型表（由 7zz 自己的格式表生成，见 tools/mkarchive_types.py）
+//
+// 表改成首次用到时再读（static let 由 Swift 运行时保证只初始化一次，且线程安全）。
+// 这不是顺手优化，是修一个真实故障：
+//
+//   从 Finder 双击归档时，AppKit 的顺序是
+//       willFinishLaunching -> open(文件) -> didFinishLaunching
+//   「打开文件」比 didFinishLaunching 早，而 Location.isArchive 要查这张表。
+//   以前把 load() 放在 didFinishLaunching 里，双击进来的那一次表还是空的，
+//   归档被当成普通文件、面板按目录去读 —— 现象是窗口开了、列表一片空白。
+//   只有双击这条路会中招：右键服务那条不查这张表，所以看起来是「解压能用、
+//   双击打开不能用」。
+//
+// 惰性加载之后，谁先用到谁触发，启动顺序不再影响结果。
 
 enum ArchiveTypes {
-    private static var extensions: Set<String> = []
-    private static var iconByExt: [String: String] = [:]
 
-    static func load() {
+    private struct Table {
+        var extensions: Set<String> = []
+        var iconByExt: [String: String] = [:]
+    }
+
+    private static let table: Table = readTable()
+
+    /// 显式预热。现在只是把惰性表读出来；留着是为了让「表读不出来」这件事
+    /// 在启动时就能在日志里留下痕迹，而不是等用户点开某个目录才发现。
+    static func load() { _ = table }
+
+    private static func readTable() -> Table {
+        var t = Table()
         guard let url = Res.url("archive_types", ext: "json"),
               let data = try? Data(contentsOf: url),
               let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
@@ -36,23 +59,24 @@ enum ArchiveTypes {
             // 这张表读不出来，等于所有归档都认不出来（列表不上归档图标、
             // 服务那边也会把归档当成普通文件）。必须留下痕迹，不能静默降级。
             NSLog("7zip: archive_types.json 读取失败，归档类型表为空")
-            return
+            return t
         }
         if let list = obj["extensions"] as? [String] {
-            extensions = Set(list.map { $0.lowercased() })
+            t.extensions = Set(list.map { $0.lowercased() })
         }
         if let map = obj["byExt"] as? [String: String] {
-            iconByExt = map.mapValues { $0.lowercased() }
+            t.iconByExt = map.mapValues { $0.lowercased() }
         }
+        return t
     }
 
     static func isArchiveExtension(_ ext: String) -> Bool {
-        extensions.contains(ext.lowercased())
+        table.extensions.contains(ext.lowercased())
     }
 
     /// 该扩展名对应的图标名（resources/icons/archive/<name>.png）
     static func iconName(forExtension ext: String) -> String? {
-        iconByExt[ext.lowercased()]
+        table.iconByExt[ext.lowercased()]
     }
 }
 

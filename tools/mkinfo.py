@@ -53,6 +53,54 @@ SERVICES = [
     ("compressWithDialog", "Compress with 7-Zip…", "item"),
 ]
 
+# 系统自带的归档 UTI。
+#
+# macOS 自己（CoreTypes.bundle）已经给 7z、rar、zip、tar、gz、bz2、xz、iso 等各自
+# 声明了类型。文件在磁盘上解析到的 UTI 是这些，**不是**我们导出的 org.7-zip.archive。
+# 实测（`UTType(filenameExtension:)`，macOS 26）：
+#
+#     .7z  -> org.7-zip.7-zip-archive   （CoreTypes 声明）
+#     .rar -> com.rarlab.rar-archive     （CoreTypes 声明）
+#     .zip -> public.zip-archive
+#     .iso -> public.iso-image
+#     .dmg -> com.apple.disk-image-udif
+#
+# LaunchServices 是按「文件解析到的那个 UTI」找处理程序的。CFBundleDocumentTypes 里
+# 只写自己造的那个 UTI，后果是：这些格式在「打开方式」的「推荐的应用程序」里看不到
+# 本 App，还会附一句「无法确认此应用程序是否可以打开…」—— 系统并不认为我们声明过
+# 这个类型。把上面这些一并列上即可。
+#
+# 仍然保持 LSHandlerRank=Alternate：只是「也能用我打开」，不抢系统已有的默认程序
+# （双击 .zip 仍然归 Archive Utility，除非用户在首启弹窗里明确选了要改）。
+#
+# 全都不声明 public.data —— 那等于认领所有文件，会让本 App 出现在任何文件的
+# 「打开方式」候选里。
+#
+# 也不去声明 com.apple.itunes.ipa：那类文件在 macOS 上归「iOS App Installer」，
+# 把它的 UTI 认下来会让 .ipa 的默认程序在用户什么都没选的情况下就被改到本 App，
+# 属于不该有的副作用。首启弹窗里因此也不列 .ipa。
+SYSTEM_ARCHIVE_UTIS = [
+    "org.7-zip.7-zip-archive",      # 7z
+    "com.rarlab.rar-archive",       # rar
+    "public.zip-archive",
+    "com.pkware.zip-archive",
+    "public.tar-archive",
+    "org.gnu.gnu-tar-archive",
+    "org.gnu.gnu-zip-archive",
+    "org.gnu.gnu-zip-tar-archive",
+    "public.bzip2-archive",
+    "public.tar-bzip2-archive",
+    "org.tukaani.xz-archive",
+    "org.tukaani.tar-xz-archive",
+    "public.cpio-archive",
+    "public.iso-image",
+    "com.apple.disk-image",
+    "com.apple.disk-image-udif",
+    "com.apple.xip-archive",
+    "com.microsoft.cab",
+    "com.sun.java-archive",
+]
+
 
 def xml_escape(s: str) -> str:
     return (s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
@@ -93,6 +141,10 @@ def service_dict(message: str, label: str, target: str, n: int) -> str:
 
 
 def build(extensions: list) -> str:
+    # 第一个是我们自己导出的 UTI（覆盖系统没认领的那些扩展名），
+    # 后面是系统已经声明过的归档 UTI —— 两者都要列，理由见 SYSTEM_ARCHIVE_UTIS。
+    content_types = [ARCHIVE_UTI] + SYSTEM_ARCHIVE_UTIS
+
     documented = [
         f"{ind(2)}<dict>",
         f"{ind(3)}<key>CFBundleTypeName</key>",
@@ -104,7 +156,7 @@ def build(extensions: list) -> str:
         f"{ind(3)}<string>Alternate</string>",
         f"{ind(3)}<key>LSItemContentTypes</key>",
         f"{ind(3)}<array>",
-        f"{ind(4)}<string>{ARCHIVE_UTI}</string>",
+    ] + [f"{ind(4)}<string>{uti}</string>" for uti in content_types] + [
         f"{ind(3)}</array>",
         f"{ind(2)}</dict>",
     ]

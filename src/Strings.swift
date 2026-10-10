@@ -403,6 +403,16 @@ enum S {
     static var aboutWarranty: String { L("7-Zip comes with ABSOLUTELY NO WARRANTY.") }
     static var aboutLicense: String { L("Licensed under the GNU LGPL + unRAR restriction.") }
 
+    // MARK: 首次启动：是否设为默认打开方式
+    //
+    // 只有标题与说明两条需要翻译 —— 勾选框上的文字就是扩展名本身（7z、zip…），
+    // 各语言一样，不进译文表。
+
+    static var defaultAppOfferTitle: String { L("Set 7-Zip as the default app for archives?") }
+    static var defaultAppOfferBody: String {
+        L("Choose the file types you want 7-Zip to open. Disk images are off by default — macOS mounts those when you double-click them.")
+    }
+
     // MARK: 使用说明（Help -> Contents）
     //
     // 这一段是多行长文，键名用 "help.text"，英文原文放在下面的常量里兜底。

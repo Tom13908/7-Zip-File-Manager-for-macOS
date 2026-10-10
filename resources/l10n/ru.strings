@@ -1,5 +1,5 @@
 // 本文件由 tools/mkl10n.py 读取并装配成 .lproj。
-// 语言：ru　条目：278
+// 语言：ru　条目：280
 
 "(cannot read file)" = "(не удаётся прочитать файл)";
 "2 Panels" = "2 Панели";
@@ -46,6 +46,7 @@
 "Cannot open file '{0}' as archive" = "Не удалось открыть файл '{0}' как архив";
 "Cannot read {0}" = "Не удаётся прочитать {0}";
 "Changed" = "Изменён";
+"Choose the file types you want 7-Zip to open. Disk images are off by default — macOS mounts those when you double-click them." = "Выберите типы файлов, которые должен открывать 7-Zip. Образы дисков по умолчанию отключены — macOS монтирует их двойным щелчком.";
 "Close" = "Закрыть";
 "Combine files..." = "Объединить файлы...";
 "Combine to:" = "Объединить в:";
@@ -196,6 +197,7 @@
 "Select by Type" = "Выделить по типу";
 "Select two files" = "Выберите два файла";
 "Select..." = "Выделить...";
+"Set 7-Zip as the default app for archives?" = "Назначить 7-Zip приложением по умолчанию для архивов?";
 "Services" = "Службы";
 "Set archive time to latest file time" = "Уcтановить время архива по времени самого нового файла";
 "Show \"..\" item" = "Показывать элемент \"..\"";

@@ -51,6 +51,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         startupTimer = timer
+
+        // 首次启动问一次「要不要把 7-Zip 设为归档的默认打开方式」。
+        // 自检（--automation）、离屏截图（--capture）、指定对话框（--dialog）、
+        // 以及 Finder 服务那条路径都不问 —— 它们要的是确定的行为，弹窗会卡住流程。
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+            guard LaunchArgs.capturePath == nil, !LaunchArgs.automation,
+                  LaunchArgs.dialog == nil, !LaunchContext.servingFinder else { return }
+            DefaultAppOffer.presentIfNeeded()
+        }
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }

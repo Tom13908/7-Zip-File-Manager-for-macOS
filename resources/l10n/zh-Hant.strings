@@ -1,5 +1,5 @@
 // 本文件由 tools/mkl10n.py 读取并装配成 .lproj。
-// 语言：zh-Hant　条目：278
+// 语言：zh-Hant　条目：280
 
 "(cannot read file)" = "(無法讀取檔案)";
 "2 Panels" = "雙窗格";
@@ -46,6 +46,7 @@
 "Cannot open file '{0}' as archive" = "無法開啟壓縮檔 '{0}'";
 "Cannot read {0}" = "無法讀取 {0}";
 "Changed" = "變更時間";
+"Choose the file types you want 7-Zip to open. Disk images are off by default — macOS mounts those when you double-click them." = "選擇希望由 7-Zip 開啟的檔案類型。磁碟映像預設不勾選 —— 這類檔案在 macOS 上按兩下是掛載。";
 "Close" = "關閉";
 "Combine files..." = "合併檔案...";
 "Combine to:" = "合併到:";
@@ -196,6 +197,7 @@
 "Select by Type" = "依類型選取";
 "Select two files" = "請選取兩個檔案";
 "Select..." = "選取...";
+"Set 7-Zip as the default app for archives?" = "要將 7-Zip 設為歸檔的預設開啟方式嗎？";
 "Services" = "服務";
 "Set archive time to latest file time" = "設定壓縮檔的修改時間為原始檔案的最後修改時間";
 "Show \"..\" item" = "顯示 \"..\" 項目";
