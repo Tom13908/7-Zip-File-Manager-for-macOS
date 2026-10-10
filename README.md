@@ -45,7 +45,7 @@ CRC32、CRC64、SHA-1、SHA-256、BLAKE2sp 等校验值；文件比较；分割�
 
 ## 安装
 
-1. 下载 `7-Zip File Manager 26.03.dmg` 并挂载。
+1. 从 [Releases](https://github.com/Tom13908/7zip-macos/releases) 下载 26.03 的 DMG 并挂载。
 2. 将 `7-Zip File Manager` 拖入 `Applications`。
 3. 首次启动会被 Gatekeeper 拦截，处理方式见下。
 4. 在系统设置中启用 Finder 服务项（见「Finder 服务菜单」）。
