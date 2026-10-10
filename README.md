@@ -1,220 +1,256 @@
-# 7-Zip for macOS
+# 7-Zip File Manager for macOS
 
-一个极度精简的macOS 7-Zip客户端。
+**English** | [简体中文](README.zh-CN.md)
 
-macOS 上的 7-Zip 图形前端，原生 AppKit，直接复用官方 `7zz` 引擎，GUI设计和操作体验还原Windows版的官方7-Zip File Manager。
+A minimal macOS 7-Zip client.
 
-7-Zip 官方在 macOS 只提供命令行（`7zz`）。本项目为其实现原生 AppKit 界面，交互沿用  
-Windows 版 7-Zip File Manager —— 工具栏布局、功能键（`F3` / `F4` 等）与之一致。  
-「解压（智能）」为 macOS 侧新增命令，见下文。
+A native AppKit GUI frontend for the 7-Zip engine on macOS, reusing the official `7zz` engine;
+the GUI and interaction replicate the official Windows 7-Zip File Manager.
 
-![主界面](images/main.png)
+Upstream 7-Zip ships only a command-line tool (`7zz`) on macOS. This project wraps the same
+engine in a native AppKit interface, following the interaction model of the Windows 7-Zip
+File Manager — the toolbar layout and the function keys (`F3`, `F4`, …) match it.
+"Extract Smart" is a macOS-only addition; see below.
 
-## 功能
+![Main window](images/main.png)
 
-**格式**　7-Zip 引擎支持的全部格式：7z、zip、rar、tar、gz、bz2、xz、zst、iso、dmg、  
-cab、rpm、deb、apk、ipa、msi、docx、xlsx 等。
+## Features
 
-**解压**　解压到当前文件夹 / 解压到指定目录 / 解压（智能，按包内结构决定是否套一层目录）；  
-浏览归档时可单独提取其中条目。
+**Formats** — everything the 7-Zip engine supports: 7z, zip, rar, tar, gz, bz2, xz, zst, iso,
+dmg, cab, rpm, deb, apk, ipa, msi, docx, xlsx, and more.
 
-**压缩**　支持 7z、zip、tar、xz、gzip、bzip2、wim 与校验值文件（hash）共 8 种格式；  
-参数面板含压缩等级、压缩方法、字典大小、单词大小、固实块大小、线程数、分卷大小、  
-AES-256 加密与文件名加密。从访达拖入文件或文件夹即弹出该面板。
+**Extract** — Extract Here / Extract To… / Extract Smart (decides whether to add a wrapping
+folder from the archive's top-level layout); extract individual entries while browsing an
+archive.
 
-**浏览**　双击进入归档内部，与普通目录同样进出 / 排序 / 查看属性；双面板对照操作；  
-`F9` 切换单 / 双面板。
+**Create** — 8 formats: 7z, zip, tar, xz, gzip, bzip2, wim, and checksum (hash) files. The
+parameters panel covers compression level, method, dictionary size, word size, solid block
+size, thread count, volume size, AES-256 encryption, and filename encryption. Dragging files
+or folders in from Finder opens the same panel.
 
-**文件操作与校验**　改名、复制、移动、删除、新建文件夹 / 文件、掩码选择；整包测试；  
-CRC32、CRC64、SHA-1、SHA-256、BLAKE2sp 等校验值；文件比较；分割与合并。
+**Browse** — double-click to enter an archive and navigate it like an ordinary directory
+(enter/leave, sort, inspect properties). Dual-panel mode; `F9` toggles single/dual panel.
 
-**系统集成**　Finder 服务菜单 5 项（解压（智能）、解压到当前文件夹、解压到…、  
-使用 7-Zip 压缩…、校验归档）；自访达拖入窗口即压缩，`⌘` 拖动则为复制；  
-归档类型以备选身份注册，不占用现有默认程序关联。
+**File operations and checksums** — rename, copy, move, delete, new folder/file, select by
+mask; test a whole archive; CRC32, CRC64, SHA-1, SHA-256, BLAKE2sp and other checksums; file
+comparison; split and combine.
 
-## 截图
+**System integration** — 5 Finder services (Extract Smart, Extract Here, Extract To…, Add to
+Archive…, Test Archive); dropping items onto the window creates an archive, `⌘`-drop copies
+instead; archive types are registered as an alternate handler, so your current default
+application is left untouched.
 
-| 双面板 | 归档内部 |
-| --- | ---- |
-| 双面板 | 归档内部 |
+## Screenshots
 
-![压缩对话框](images/add-archive.png)
+| Dual panel | Inside an archive |
+|---|---|
+| ![Dual panel](images/two-panel.png) | ![Inside an archive](images/archive.png) |
 
-## 系统要求
+![Create archive dialog](images/add-archive.png)
 
-- macOS 13.0 或更高。
+## Requirements
 
-## 安装
+- macOS 13.0 or later.
 
-1. 从 [Releases](https://github.com/Tom13908/7zip-macos/releases) 下载 26.03 的 DMG 并挂载。
-2. 将 `7-Zip File Manager` 拖入 `Applications`。
-3. 首次启动会被 Gatekeeper 拦截，处理方式见下。
-4. 在系统设置中启用 Finder 服务项（见「Finder 服务菜单」）。
+## Installation
 
-引擎随 App 分发（`Contents/Resources/7zz`），无需另行安装。
+1. Download the 26.03 DMG from
+   [Releases](https://github.com/Tom13908/7-Zip-File-Manager-for-macOS/releases) and mount it.
+2. Drag `7-Zip File Manager` into `Applications`.
+3. The first launch is blocked by Gatekeeper; see below.
+4. Enable the Finder services in System Settings (see "Finder services").
 
-### 首次启动
+The engine ships inside the app (`Contents/Resources/7zz`); no separate 7-Zip install is needed.
 
-App 未经 Apple 公证，首次打开会被 Gatekeeper 拦截。
+### First launch
 
-- **macOS 15 及以上**：双击后系统提示无法验证开发者，关闭该提示；在  
-  `系统设置 → 隐私与安全性` 的「安全性」一节点「仍要打开」并再次确认。
-- **macOS 13 / 14**：右键图标 →「打开」，在弹窗中再次确认。
+The app is not notarized by Apple, so Gatekeeper blocks it the first time.
 
-或直接移除隔离属性：
+- **macOS 15 and later**: dismiss the "Apple could not verify…" prompt, then open
+  `System Settings → Privacy & Security`, scroll to the Security section, click "Open Anyway"
+  and confirm once more.
+- **macOS 13 / 14**: right-click the icon, choose "Open", and confirm in the dialog.
+
+Or remove the quarantine attribute directly:
 
 ```
 xattr -cr "/Applications/7-Zip File Manager.app"
 ```
 
-### Finder 服务菜单
+### Finder services
 
-右键点归档或任意文件，菜单中应出现以下 5 项：
+Right-click an archive or any file; the menu should list these 5 items:
 
-| 菜单项          | 出现条件        |
-| ------------ | ----------- |
-| 解压（智能）       | 选中归档时       |
-| 解压到当前文件夹     | 选中归档时       |
-| 解压到…         | 选中归档时       |
-| 使用 7-Zip 压缩… | 选中任意文件或文件夹时 |
-| 校验归档         | 选中归档时       |
+| Menu item | Appears when |
+|---|---|
+| Extract Smart | an archive is selected |
+| Extract Here | an archive is selected |
+| Extract To… | an archive is selected |
+| Add to Archive… | any file or folder is selected |
+| Test Archive | an archive is selected |
 
-服务项名称与顺序由系统决定：名称跟随**系统**语言（而非 App 内所选语言），同一 App 的  
-服务排为一组、组内按本地化后的文字排序。未显示时，在  
-`系统设置 → 键盘 → 键盘快捷键 → 服务 → 文件与文件夹` 中启用。
+Names and ordering are controlled by the system: names follow the **system** language (not
+the language selected inside the app), and all services from one app form a group sorted by
+their localized text. If they do not appear, enable them under
+`System Settings → Keyboard → Keyboard Shortcuts → Services → Files and Folders`.
 
-服务按 App 当前所在路径注册。系统中存在同一 App 的多份副本时（尤其是废纸篓中的旧副本），  
-右键菜单可能调用错误的副本。变更位置后请重新注册：
+Services are registered against the app's current location. When several copies of the app
+exist (especially stale ones in the Trash), the menu may launch the wrong copy. After moving
+the app, re-register it:
 
 ```
 LSR=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 "$LSR" -f "/Applications/7-Zip File Manager.app"
 ```
 
-## 使用
+## Usage
 
-### 界面
+### Interface
 
-顶部工具栏：添加 / 解压 / 解压（智能）/ 测试 / 复制 / 移动 / 删除 / 信息；其下为地址栏  
-（左端向上箭头按钮，右端路径框），中间文件列表，底部状态栏。工具栏按钮恒可用，不随选中项  
-置灰（与 Windows 版一致，启用状态仅作用于地址栏的向上箭头）。
+Toolbar: Add / Extract / Extract Smart / Test / Copy / Move / Delete / Info; below it the
+address bar (up-arrow button on the left, path field on the right), the file list in the
+middle, and a status bar at the bottom. The toolbar buttons are always enabled and never grey
+out with the selection (matching the Windows version; enabled state only applies to the
+up-arrow in the address bar).
 
-- 双击目录进入；双击归档进入包内浏览，选中条目按「解压」解出。
-- 列表内按住左键拖动为框选多选，任意行或空白处起拖均可。
-- 按住 `⌥` 拖动为将文件拖出（至访达或另一面板）。
-- 自访达拖入窗口即压缩（弹出与「使用 7-Zip 压缩…」相同的对话框）；按住 `⌘` 拖入则为  
-  复制到该面板目录；拖入归档面板则为追加进包。
-- `工具 → 选项` 中的开关与 Windows 版同名同义（新增「显示隐藏项目」见下）。
-- `文件` 菜单中的命令随选中项置灰。
+- Double-click a directory to enter it; double-click an archive to browse inside, then select
+  an entry and click Extract.
+- Hold the left button and drag inside the list to rubber-band select, starting from any row
+  or from empty space.
+- Hold `⌥` while dragging to drag files out (to Finder or the other panel).
+- Dropping items from Finder onto the window creates an archive (the same dialog as "Add to
+  Archive…"); hold `⌘` to copy into the panel's directory instead; dropping onto an archive
+  panel appends to the archive.
+- The switches under `Tools → Options` have the same names and meanings as the Windows
+  version (the added "Show hidden items" is described below).
+- Commands in the `File` menu grey out with the selection.
 
-### 解压（智能）
+### Extract Smart
 
-可从访达右键、工具栏第三个按钮、列表右键三处调用。落点由包内顶层结构决定：
+Available from the Finder context menu, the third toolbar button, and the list context menu.
+The destination is decided by the archive's top-level layout:
 
-| 包内顶层   | 解压位置                          |
-| ------ | ----------------------------- |
-| 仅一个文件  | 归档所在目录，不建包装层                  |
-| 仅一个文件夹 | 归档所在目录，该文件夹整体落地               |
-| 多个顶层项  | 新建「归档名」文件夹装入；同名已存在时为「归档名 (2)」 |
+| Top level inside the archive | Extracted to |
+|---|---|
+| A single file | the archive's directory, with no wrapping folder |
+| A single folder | the archive's directory, the folder lands as a whole |
+| Multiple top-level items | a new "archive name" folder; if that name exists, "archive name (2)" |
 
-与前两者的差异仅出现在第三种情形：「解压到当前文件夹」会将多个顶层项直接铺在归档所在目录。
+The only difference from "Extract Here" is the third case: Extract Here lays the multiple
+top-level items directly into the archive's directory.
 
-无法读出包内结构时（如加密包未提供密码）按第三种处理，即多加一层目录。
+If the archive's layout cannot be read (e.g. an encrypted archive with no password), the third
+case is used — an extra folder level.
 
-### 覆盖与重名
+### Overwrite and name collisions
 
-解压前检测落点同名项，存在时提示 **覆盖 / 跳过 / 改名**，三条解压命令统一走此逻辑。
+Before extracting, the destination is checked for same-named items; if any exist you are
+prompted to **Overwrite / Skip / Rename**, consistently across all three extract commands.
 
-压缩时若目标归档已存在，提示 **并入现有归档 / 更换名称**。
+When creating an archive whose target already exists, you are prompted to **add to the
+existing archive** or **use a different name**.
 
-多选压缩时默认名为「归档 2026-10-08 15.30.7z」（固定词「归档」+ 到分钟的时间戳，  
-其他语言使用对应译法）；单选时仍为「原名.7z」。名称可在对话框中修改。
+Creating from a multi-selection defaults to "Archive 2026-10-08 15.30.7z" (the fixed word
+"Archive" plus a timestamp to the minute, translated per language); a single selection still
+uses "name.7z". The name can be edited in the dialog.
 
-解压、压缩、复制等操作弹出进度窗口，**完成后自动关闭**，仅在出错时保留并列出错误。
+Extract, create, copy and similar operations show a progress window that **closes itself when
+done**, staying on screen only to list errors.
 
-### 启动位置
+### Startup location
 
-`工具 → 选项 → 启动时打开`：
+`Tools → Options → Open at startup`:
 
-- **上次打开的文件夹**（默认）。
-- **主路径** —— 每次固定打开同一目录；默认用户主目录，可在同页 `主路径` 中修改或通过  
-  `选择…` 指定，清空输入框则回到默认。
+- **Last opened folder** (default).
+- **Main path** — always open the same directory; defaults to the home folder, editable via
+  the `Main path` field or the `Choose…` button on the same page; clearing the field restores
+  the default.
 
-自访达双击归档进入时不受此设置影响，直接打开所点归档。
+Opening an archive by double-clicking it in Finder is not affected by this setting; it opens
+the archive you clicked.
 
-### 隐藏项
+### Hidden items
 
-默认不显示隐藏项。`工具 → 选项 → 显示隐藏项目` 可切换。判定采用 macOS 口径：  
-名称以 `.` 开头（`.DS_Store`、`.git`）或带 hidden 标志（如主目录下的 `Library`）。  
-该设置仅作用于文件列表；归档内部按原样列出，不做过滤。
+Hidden items are not shown by default. Toggle with `Tools → Options → Show hidden items`. The
+check follows macOS semantics: a name starting with `.` (`.DS_Store`, `.git`) or carrying the
+hidden flag (such as `Library` in your home folder). The setting affects the file list only;
+archive contents are listed as-is, without filtering.
 
-### 返回上一级
+### Going up one level
 
-- 地址栏左端向上箭头按钮（同 `查看 → 向上一级`）。
-- `⌫`（Backspace）。
-- `⌃PageUp`。
-- 列表内双击 `..` 行（需先在 `工具 → 选项` 中启用 `显示「..」项`，默认关闭，与 Windows 版一致）。
+- The up-arrow button at the left of the address bar (same as `View → Up One Level`).
+- `⌫` (Backspace).
+- `⌃PageUp`.
+- Double-clicking the `..` row in the list (enable `Show ".." item` under `Tools → Options`
+  first; off by default, matching the Windows version).
 
-### 快捷键
+### Keyboard shortcuts
 
-| 键    | 作用  | 键          | 作用        |
-| ---- | --- | ---------- | --------- |
-| `F2` | 重命名 | `F7`       | 新建文件夹     |
-| `F3` | 查看  | `Shift+F4` | 新建文件      |
-| `F4` | 编辑  | `F9`       | 双面板 / 单面板 |
-| `F5` | 复制到 | `⌫`        | 返回上一级     |
-| `F6` | 移动到 | `⌘⌫`       | 删除        |
+| Key | Action | Key | Action |
+|---|---|---|---|
+| `F2` | Rename | `F7` | New Folder |
+| `F3` | View | `Shift+F4` | New File |
+| `F4` | Edit | `F9` | Dual / single panel |
+| `F5` | Copy To | `⌫` | Up one level |
+| `F6` | Move To | `⌘⌫` | Delete |
 
-采用 Windows 功能键布局；在将 `F1`–`F12` 作为媒体键的 Mac 上需配合 `Fn` 按下。  
-另有 macOS 惯用键：`⌘A` 全选、`⌘I` 属性、`⌘,` 选项、`⌘Q` 退出。
+This uses the Windows function-key layout; on Macs that map `F1`–`F12` to media keys, hold
+`Fn` as well. Also the usual macOS keys: `⌘A` select all, `⌘I` properties, `⌘,` options,
+`⌘Q` quit.
 
-## 语言
+## Languages
 
-界面语言跟随系统语言，支持：
+The UI language follows the system language. Supported:
 
-|               |                    |          |
-| ------------- | ------------------ | -------- |
-| 简体中文（zh-Hans） | 繁體中文（zh-Hant）      | 日本語      |
-| 한국어           | Deutsch            | Français |
-| Español       | Português (Brasil) | Italiano |
-| Русский       | English（源语言）       |          |
+| | | |
+|---|---|---|
+| 简体中文 (zh-Hans) | 繁體中文 (zh-Hant) | 日本語 |
+| 한국어 | Deutsch | Français |
+| Español | Português (Brasil) | Italiano |
+| Русский | English (source) | |
 
-于 `系统设置 → 通用 → 语言与地区` 修改，重启 App 生效。界面与 Finder 服务菜单始终使用  
-同一语言，不会出现界面中文、菜单英文的错位。
+Change it under `System Settings → General → Language & Region`, then restart the app. The UI
+and the Finder services always use the same language, so you never get a Chinese UI with
+English menu items.
 
-## 卸载
+## Uninstall
 
-将 App 移入废纸篓，并删除 `~/Library/Preferences/org.7-zip.FileManager.plist`。  
-LaunchServices 会保留指向已删除路径的注册记录，可按路径注销：
+Move the app to the Trash and delete `~/Library/Preferences/org.7-zip.FileManager.plist`.
+LaunchServices keeps a registration record pointing at the deleted path; unregister it by path:
 
 ```
 LSR=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 "$LSR" -u "/Applications/7-Zip File Manager.app"
 ```
 
-## 技术栈
+## Technical stack
 
-**界面**　Swift + AppKit，不使用 SwiftUI，无第三方依赖；图标取自 7-Zip 官方素材，  
-与 Windows 版同源。
+**UI** — Swift + AppKit, no SwiftUI, no third-party dependencies. The icons come from the
+official 7-Zip artwork, the same set as the Windows version.
 
-**引擎**　7-Zip 26.03 官方源码，经 `scripts/build-engine.sh` 编译为 `7zz`，编解码代码未作修改。  
-所有压缩解压由该子进程完成，界面仅解析其输出。
+**Engine** — the official 7-Zip 26.03 sources, built into `7zz` by `scripts/build-engine.sh`
+with the codec code unchanged. All compression and extraction is done by that subprocess; the
+UI only parses its output.
 
-**二进制**　App 与 `7zz` 均为 universal（arm64 + x86_64）；两个切片的部署目标与  
-`Info.plist` 一致，均为 macOS 13.0。
+**Binaries** — both the app and `7zz` are universal (arm64 + x86_64); the deployment target of
+both slices matches `Info.plist` — macOS 13.0.
 
-**本地化**　11 种语言文案与 7-Zip 官方语言包逐条对齐：可对应者直接取自官方  
-[7-zip.org](https://www.7-zip.org) 安装程序中的 `Lang/*.txt`，官方未覆盖的 macOS 侧文案  
-（服务菜单名、AppKit 惯例项、启动位置等设置项）按同样用词补齐。翻译文件位于  
-`resources/l10n/<语言>.strings`，键为英文原文。
+**Localization** — the 11 languages are aligned line by line with the official 7-Zip language
+packs: where a string exists it is taken directly from the official `Lang/*.txt` in the
+[7-zip.org](https://www.7-zip.org) installer; macOS-only strings (service menu names, AppKit
+conventions, the startup-location settings) are filled in with the same wording. Translation
+files live in `resources/l10n/<language>.strings`, keyed by the English source text.
 
-## 实现说明
+## Implementation note
 
-界面、i18n与构建脚本通过**DeepSeek-V4.1-Flash** 完成；引擎 `7zz` 为  
-7-Zip 官方源码原样编译，未经修改。
+The UI, i18n and build scripts were produced with **DeepSeek-V4.1-Flash**; the `7zz` engine is
+built unmodified from the official 7-Zip sources.
 
-## 致谢
+## Credits
 
-界面图标、文案原文（`en.ttt`）与各语言译文来自 7-Zip 官方，引擎由官方 26.03 源码编译。  
-本仓库沿用 7-Zip 原版许可（GNU LGPL 2.1+，RAR 解压部分另带 unRAR restriction），全文见 [LICENSE](LICENSE)。  
-7-Zip 版权归 Igor Pavlov 所有。
+The UI icons, the source English strings (`en.ttt`) and all translations come from the
+official 7-Zip, and the engine is built from the official 26.03 sources.
+
+This repository uses the same license as 7-Zip itself (GNU LGPL 2.1+, with the unRAR
+restriction for the RAR decompression code); the full text is in [LICENSE](LICENSE). 7-Zip is
+copyright Igor Pavlov.

@@ -1,5 +1,5 @@
-7-Zip for macOS
-===============
+7-Zip File Manager for macOS
+=============================
 
 The macOS GUI frontend in this repository — the Swift/AppKit sources under
 src/, together with the build and packaging scripts under scripts/ and tools/
