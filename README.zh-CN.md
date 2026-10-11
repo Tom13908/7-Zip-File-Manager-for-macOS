@@ -50,7 +50,8 @@ CRC32、CRC64、SHA-1、SHA-256、BLAKE2sp 等校验值；文件比较；分割�
 
 1. 从 [Releases](https://github.com/Tom13908/7-Zip-File-Manager-for-macOS/releases) 下载 26.03 的 DMG 并挂载。
 2. 将 `7-Zip File Manager` 拖入 `Applications`。
-3. 首次启动会被 Gatekeeper 拦截，处理方式见下。
+3. 打开 App 一次。首次启动会被 Gatekeeper 拦截，处理方式见下；过了这一步，它会问你
+   要不要把它设为归档的默认打开方式 —— 这个问题只在首次启动时问一次。
 4. 在系统设置中启用 Finder 服务项（见「Finder 服务菜单」）。
 
 引擎随 App 分发（`Contents/Resources/7zz`），无需另行安装。

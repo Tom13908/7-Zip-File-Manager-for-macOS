@@ -57,7 +57,9 @@ application is left untouched.
 1. Download the 26.03 DMG from  
    [Releases](https://github.com/Tom13908/7-Zip-File-Manager-for-macOS/releases) and mount it.
 2. Drag `7-Zip File Manager` into `Applications`.
-3. The first launch is blocked by Gatekeeper; see below.
+3. Open the app once. The first launch is blocked by Gatekeeper; see below. Once it gets past that,
+   it asks whether to make itself the default app for archives — that question is asked on this
+   first launch only.
 4. Enable the Finder services in System Settings (see "Finder services").
 
 The engine ships inside the app (`Contents/Resources/7zz`); no separate 7-Zip install is needed.
