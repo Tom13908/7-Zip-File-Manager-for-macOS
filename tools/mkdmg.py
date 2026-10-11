@@ -103,11 +103,18 @@ def window_settings() -> dict:
 
 
 def icon_view_settings(alias_bytes: bytes) -> dict:
-    """icvp：图标视图的外观——图标多大、背景用图片、标签在图标下方。"""
+    """icvp：图标视图的外观——图标多大、背景用图片、标签在图标下方。
+
+    字段要跟 Finder 自己写的保持同一套：少了 backgroundColor* / scrollPosition*
+    时 Finder 不认这条记录（实测 `iconSize` 都被忽略，窗口回落到 64pt 默认值）。
+    """
     return {
         "viewOptionsVersion": 1,
         "backgroundType": 2,               # 2 = 用图片（1 = 纯色）
         "backgroundImageAlias": alias_bytes,
+        "backgroundColorRed": 1.0,
+        "backgroundColorGreen": 1.0,
+        "backgroundColorBlue": 1.0,
         "arrangeBy": "none",               # 位置我们自己定，别让 Finder 重排
         "gridOffsetX": 0.0,
         "gridOffsetY": 0.0,
@@ -117,12 +124,13 @@ def icon_view_settings(alias_bytes: bytes) -> dict:
         "showIconPreview": False,
         "showItemInfo": False,
         "textSize": 12.0,
+        "scrollPositionX": 0.0,
+        "scrollPositionY": 0.0,
     }
 
 
 def cmd_layout(mount: str) -> None:
     from ds_store import DSStore
-    from ds_store.store import DSStoreEntry, ILocCodec, PlistCodec
     from mac_alias import Alias
 
     root = pathlib.Path(mount)
@@ -136,19 +144,28 @@ def cmd_layout(mount: str) -> None:
     # alias 记的是卷内路径。必须先挂载、文件真实存在，才能算出来。
     alias = Alias.for_file(str(bg))
 
-    entries = [
-        DSStoreEntry(".", "bwsp", PlistCodec, window_settings()),
-        DSStoreEntry(".", "icvp", PlistCodec, icon_view_settings(alias.to_bytes())),
-        DSStoreEntry(APP_NAME, "Iloc", ILocCodec, APP_ICON_POS),
-        DSStoreEntry("Applications", "Iloc", ILocCodec, DEST_ICON_POS),
-    ]
-    entries.sort()
-
     ds = root / ".DS_Store"
     if ds.exists():
         ds.unlink()
-    with DSStore.open(str(ds), "w+", initial_entries=entries) as d:
-        d.flush()
+
+    # 逐条赋值，别改成 DSStore.open(..., initial_entries=[...])。
+    #
+    # 两条路写出来的记录内容完全一样，但 initial_entries 那条是一次性建树，
+    # 产物 Finder 不认：整份 .DS_Store 被忽略，窗口回落成默认外观（图标 64pt、
+    # 没有背景图、图标自己挤到左上角）。逐条赋值走的是 insert，实测有效。
+    #
+    # vSrn 和 icvl 两条记录也不能省。实测（同一个卷，只换 .DS_Store 内容）：
+    #   bwsp + icvp + Iloc              -> 图标 48pt、背景不显示
+    #   再加 vSrn + icvl，仍用 initial_entries -> 图标 48pt、背景不显示
+    #   再加 vSrn + icvl，改逐条赋值    -> 图标 128pt、背景图与位置全部生效
+    # icvl 的 "icnv" 是「图标视图」，vSrn = 1 是这套视图设置的版本号。
+    with DSStore.open(str(ds), "w+") as d:
+        d["."]["vSrn"] = ("long", 1)
+        d["."]["bwsp"] = window_settings()
+        d["."]["icvp"] = icon_view_settings(alias.to_bytes())
+        d["."]["icvl"] = (b"type", b"icnv")
+        d[APP_NAME]["Iloc"] = APP_ICON_POS
+        d["Applications"]["Iloc"] = DEST_ICON_POS
 
     print(f"窗口布局 -> {ds}")
     print(f"  窗口 {WINDOW_W}x{WINDOW_H} @ {WINDOW_POS}")

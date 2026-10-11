@@ -176,6 +176,55 @@ UTI** 弹一次确认框，completion 一直挂到用户点完为止。首启默
 的对话框里点过「确定」，那 13 次系统确认只是把同一件事重复问 13 遍。写之前会在
 同目录留一份 `.7zip-backup`：这个文件是系统级的，写坏会影响本机所有 App 的打开方式。
 
+## DMG 窗口里的提示
+
+DMG 窗口长得什么样（窗口尺寸与位置、图标大小、图标各自的坐标、背景图）全部由
+卷内那份 `.DS_Store` 决定，跟 `hdiutil create` 的参数无关。生成它的是
+`tools/mkdmg.py layout`，由 `scripts/build-dmg.sh` 在挂载状态下调用：背景图要先
+拷进卷里的 `.background/`，`Alias.for_file` 记的是卷内路径，所以必须真挂载了、
+文件真实存在才能算出别名。
+
+`.DS_Store` 要写这几条，缺一不可：
+
+| 位置 | 键 | 作用 |
+|---|---|---|
+| `.` | `vSrn` | 视图设置版本号，固定 1 |
+| `.` | `bwsp` | 窗口尺寸与位置 |
+| `.` | `icvp` | 图标视图外观：图标多大、用图片作背景、标签在图标下方 |
+| `.` | `icvl` | 标记「图标视图」，值 `icnv` |
+| 每个图标 | `Iloc` | 该图标在窗口里的坐标 |
+
+**必须逐条赋值，不要用 `DSStore.open(path, "w+", initial_entries=[...])`。**
+两条路写出来的记录集合完全一致，但 `initial_entries` 是一次性建树，产物 Finder
+不认：整份 `.DS_Store` 被忽略，窗口回落成默认外观（没有背景图、图标缩回 64pt、
+图标自己挤到左上角）。逐条 `d["."][code] = value` 走的是 insert，实测有效。
+
+`vSrn` 和 `icvl` 两条也不能省。同一个卷、只换 `.DS_Store` 内容，实测：
+
+| 写入内容 | Finder 回读 |
+|---|---|
+| `bwsp` + `icvp` + `Iloc` | 图标 48pt，背景不显示 |
+| 再加 `vSrn` + `icvl`，仍用 `initial_entries` | 图标 48pt，背景不显示 |
+| 再加 `vSrn` + `icvl`，改逐条赋值 | 图标 128pt，背景图与位置全部生效 |
+
+`icvp` 的字段要跟 Finder 自己写的那一套对齐。少了 `backgroundColor*` /
+`scrollPosition*` 时 Finder 不认这条记录，连 `iconSize` 都被忽略。
+
+### 怎么验证生效了
+
+用 `osascript` 读 `icon size` / `text size` / `position of every item`，这几个能
+可靠回显。`background picture of icon view options` 读不出来（本机恒报
+`-10000 AppleEvent处理程序失败`，对我们的卷、对 Rectangle 的官方 DMG、对普通目录
+都一样），**不能当判据**。
+
+**同一个卷名反复挂载时 Finder 会回读上一次的视图设置**，直接读会拿到假结果。
+验证要么换卷名（`hdiutil convert ... -format UDRW` 之后 `diskutil rename`），要么
+换一个镜像做对照。这一条曾经让我把「缓存里的旧值」当成「新文件也生效了」。
+
+要确认 Finder 真的解析了背景图别名，可以做可写挂载（`-shadow`），让 Finder 打开
+一次窗口，然后看它有没有改写 `.DS_Store`：它会保留全部设置，并把背景别名从我们
+写的卷内相对别名（392 字节）重写成完整 bookmark（672 字节）。重写了就是解析过了。
+
 ## 自检通道
 
 面板交互那轮通过 `--automation` 从 stdin 收命令，鼠标动作把 `NSEvent` 排进 App  
