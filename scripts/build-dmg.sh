@@ -39,8 +39,15 @@ if [ ! -d "$APP" ]; then
     exit 1
 fi
 
-VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" \
-              "$APP/Contents/Info.plist" 2>/dev/null || echo "0.0")
+# 对外版本名：<上游引擎版本>_v<GUI 版本>，例如 26.03_v0.02。
+# 两个值都从 tools/mkinfo.py 读，改版本只改那一处。
+ENGINE_VERSION=$(sed -n 's/^ENGINE_VERSION = "\(.*\)"$/\1/p' tools/mkinfo.py)
+APP_VERSION=$(sed -n 's/^APP_VERSION = "\(.*\)"$/\1/p' tools/mkinfo.py)
+if [ -z "$ENGINE_VERSION" ] || [ -z "$APP_VERSION" ]; then
+    echo "没从 tools/mkinfo.py 读到 ENGINE_VERSION / APP_VERSION" >&2
+    exit 1
+fi
+VERSION="${ENGINE_VERSION}_v${APP_VERSION}"
 OUT="$BUILD/$APP_NAME $VERSION.dmg"
 WORK="$BUILD/dmg-work"
 TMP_DMG="$BUILD/dmg-rw.dmg"

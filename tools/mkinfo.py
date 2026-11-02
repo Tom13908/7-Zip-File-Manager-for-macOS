@@ -27,7 +27,13 @@ OUT = ROOT / "resources" / "Info.plist"
 
 BUNDLE_ID = "org.7-zip.FileManager"
 APP_NAME = "7-Zip File Manager"
-VERSION = "26.03"
+# 两个版本号，别混：
+#   ENGINE_VERSION 是上游 7-Zip 的版本，跟着引擎走
+#   APP_VERSION    是这套 GUI 自己的版本，从 0 起算
+# 对外命名用 <ENGINE_VERSION>_v<APP_VERSION>，例如 26.03_v0.02。
+# Info.plist 的版本字段只接受点分数字，所以那里只能写 APP_VERSION。
+ENGINE_VERSION = "26.03"
+APP_VERSION = "0.02"
 ARCHIVE_UTI = "org.7-zip.archive"
 
 # 最低系统版本。必须与两个架构切片的 minos 一致（见 scripts/build-app.sh 的 MIN_OS）：
@@ -209,9 +215,9 @@ def build(extensions: list) -> str:
         f'{ind(1)}<key>CFBundlePackageType</key>',
         f'{ind(1)}<string>APPL</string>',
         f'{ind(1)}<key>CFBundleShortVersionString</key>',
-        f'{ind(1)}<string>{VERSION}</string>',
+        f'{ind(1)}<string>{APP_VERSION}</string>',
         f'{ind(1)}<key>CFBundleVersion</key>',
-        f'{ind(1)}<string>{VERSION}</string>',
+        f'{ind(1)}<string>{APP_VERSION}</string>',
         f'{ind(1)}<key>CFBundleSignature</key>',
         f'{ind(1)}<string>????</string>',
         f'{ind(1)}<key>LSApplicationCategoryType</key>',
@@ -223,7 +229,7 @@ def build(extensions: list) -> str:
         f'{ind(1)}<key>NSPrincipalClass</key>',
         f'{ind(1)}<string>NSApplication</string>',
         f'{ind(1)}<key>NSHumanReadableCopyright</key>',
-        f'{ind(1)}<string>7-Zip {VERSION} (C) Igor Pavlov. GUI front end for macOS.</string>',
+        f'{ind(1)}<string>7-Zip {ENGINE_VERSION} (C) Igor Pavlov. GUI front end for macOS v{APP_VERSION}.</string>',
         f'{ind(1)}<key>NSSupportsAutomaticTermination</key>',
         f'{ind(1)}<false/>',
         f'{ind(1)}<key>NSSupportsSuddenTermination</key>',
