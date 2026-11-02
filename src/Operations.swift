@@ -435,6 +435,11 @@ final class Operations {
         var args: [String] = [options.pathMode == .noPaths ? "e" : "x"]
         args.append("-o" + options.destination)
         args.append("-y")
+        // 默认策略只看链接原文，遇到第一个 ".." 就判危险。目录里常见的
+        // "legal/x/LICENSE -> ../java.base/LICENSE" 会被拒绝，并写成 0 字节
+        // 空文件，归档里的 App 签名随之失效。-snld 改为拼上所在目录再判定，
+        // 真正越界的链接仍然被拒。
+        args.append("-snld")
         if let ao = options.overwrite.argument { args.append(ao) }
         if options.pathMode == .absolute { args.append("-spf2") }
         if options.eliminateDuplicate { args.append("-spe") }
