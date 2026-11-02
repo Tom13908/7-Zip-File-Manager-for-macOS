@@ -33,9 +33,9 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>26.03</string>
+	<string>0.02</string>
 	<key>CFBundleVersion</key>
-	<string>26.03</string>
+	<string>0.02</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>LSApplicationCategoryType</key>
@@ -47,7 +47,7 @@
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>7-Zip 26.03 (C) Igor Pavlov. GUI front end for macOS.</string>
+	<string>7-Zip 26.03 (C) Igor Pavlov. GUI front end for macOS v0.02.</string>
 	<key>NSSupportsAutomaticTermination</key>
 	<false/>
 	<key>NSSupportsSuddenTermination</key>
