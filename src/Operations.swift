@@ -435,11 +435,17 @@ final class Operations {
         var args: [String] = [options.pathMode == .noPaths ? "e" : "x"]
         args.append("-o" + options.destination)
         args.append("-y")
-        // 默认策略只看链接原文，遇到第一个 ".." 就判危险。目录里常见的
-        // "legal/x/LICENSE -> ../java.base/LICENSE" 会被拒绝，并写成 0 字节
-        // 空文件，归档里的 App 签名随之失效。-snld 改为拼上所在目录再判定，
-        // 真正越界的链接仍然被拒。
-        args.append("-snld")
+        // 符号链接的危险判定分两级，源码里是两个不同的阈值：
+        //   5  还是默认值，只看链接原文。见到第一个 ".." 就判危险，
+        //      于是 "legal/x/LICENSE -> ../java.base/LICENSE" 这种标准写法
+        //      被拒绝，位置留成 0 字节空文件，归档里 App 的签名随之失效。
+        //   9  -snld 的默认值，改成拼上链接所在目录再算路径。上面那种问题
+        //      没了，但还会检查「经由另一个链接」。mac 的 framework 都是
+        //      "MPClasses -> Versions/Current/MPClasses" 套一层链接，
+        //      于是又被判危险。
+        //   10 跳过「经由另一个链接」这一条，同时保留越界路径检查：
+        //      "../../../../../../../tmp/x" 仍然被拒。
+        args.append("-snld10")
         if let ao = options.overwrite.argument { args.append(ao) }
         if options.pathMode == .absolute { args.append("-spf2") }
         if options.eliminateDuplicate { args.append("-spe") }
