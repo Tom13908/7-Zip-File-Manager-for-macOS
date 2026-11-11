@@ -117,7 +117,8 @@ final class ProgressModel {
 
     var ratio: String {
         guard kind == .compress, processedBytes > 0, outputBytes > 0 else { return "" }
-        return String(format: "%.0f%%", Double(processedBytes) / Double(outputBytes) * 100)
+        // 压缩率 = 产出体积 / 原始体积。原来写反了，而且 outputBytes 一直取不到值。
+        return String(format: "%.0f%%", Double(outputBytes) / Double(processedBytes) * 100)
     }
 
     func update(percent p: Int, file: String) {
@@ -405,6 +406,123 @@ final class ProgressWindowController: NSWindowController {
     }
 }
 
+// MARK: - 解压前的冲突预检
+
+/// 「在覆盖前询问」的保护层。
+///
+/// 7zz 的覆盖询问走 stdin，而 EngineTask 把 stdin 接到了 /dev/null。
+/// 原来 ask 不加开关却照样带 -y，等于对每个冲突都答 Yes，用户看到的是
+/// 静默覆盖。这里在解压前先读出条目清单，算出会落在哪些路径，问一次，
+/// 再把选择换成 -aoa / -aos / -aot 交给引擎。
+private enum ExtractGuard {
+
+    /// 读 `l -slt -ba` 里的 Path 行。读不出来（缺密码、坏包）返回 nil，
+    /// 调用方按「不改任何已有文件」处理，不猜。
+    static func entryPaths(archive: String, password: String) -> [String]? {
+        var args = ["l", "-slt", "-ba"]
+        if !password.isEmpty { args.append("-p" + password) }
+        args.append("--")
+        args.append(archive)
+        guard let r = try? Engine.runSync(args), r.exitCode == 0 else { return nil }
+        var paths: [String] = []
+        r.stdout.enumerateLines { line, _ in
+            guard line.hasPrefix("Path = ") else { return }
+            let p = String(line.dropFirst(7))
+            if !p.isEmpty { paths.append(p) }
+        }
+        return paths.isEmpty ? nil : paths
+    }
+
+    /// 把归档内部路径换算成会落地的目标路径。
+    /// 引擎会消毒 ".." 和绝对路径；越出目标目录的一律不算冲突。
+    static func landingPaths(_ paths: [String], names: [String],
+                             options: ExtractOptions) -> [String] {
+        var selected = paths
+        if !names.isEmpty {
+            selected = selected.filter { p in
+                names.contains { n in p == n || p.hasPrefix(n + "/") }
+            }
+        }
+        if options.eliminateDuplicate, let root = commonRoot(selected) {
+            selected = selected.compactMap {
+                $0 == root ? nil : String($0.dropFirst(root.count + 1))
+            }
+        }
+        let dest = (options.destination as NSString).standardizingPath
+        return selected.compactMap { p -> String? in
+            let raw = options.pathMode == .noPaths
+                ? (p as NSString).lastPathComponent
+                : p
+            let joined = (dest as NSString).appendingPathComponent(raw)
+            let std = (joined as NSString).standardizingPath
+            guard std == dest || std.hasPrefix(dest + "/") else { return nil }
+            return std
+        }
+    }
+
+    /// -spe 会去掉所有条目共用的那一层根目录
+    private static func commonRoot(_ paths: [String]) -> String? {
+        guard let first = paths.first else { return nil }
+        let root = (first as NSString).pathComponents.first ?? ""
+        guard !root.isEmpty, root != "/",
+              paths.allSatisfy({ ($0 as NSString).pathComponents.first == root }),
+              // 只有一条孤零零的目录记录不算「共享根目录」；要真有下级条目
+              // 才轮得到 -spe 去剥掉这一层。
+              paths.contains(where: { $0.contains("/") }) else { return nil }
+        return root
+    }
+
+    /// 目标目录里已经存在的落地路径，去重后给出名字
+    static func existing(_ landing: [String]) -> [String] {
+        let fm = FileManager.default
+        var out: [String] = []
+        for p in landing where fm.fileExists(atPath: p) {
+            let name = (p as NSString).lastPathComponent
+            if !out.contains(name) { out.append(name) }
+        }
+        return out
+    }
+
+    /// e（无路径）模式下，不同目录里的同名条目会落到同一个位置
+    static func duplicateNames(_ paths: [String]) -> [String] {
+        var seen: Set<String> = []
+        var dup: Set<String> = []
+        for p in paths {
+            let n = (p as NSString).lastPathComponent
+            if !seen.insert(n).inserted { dup.insert(n) }
+        }
+        return dup.sorted()
+    }
+}
+
+/// 自定义参数框里的分词。原来按空格硬切，填 `-m0=LZMA2 "a b.txt"`
+/// 会把引号里的名字拆成两个 argv。这里按 shell 的规则认引号和反斜杠。
+enum CommandLineSplitting {
+    static func split(_ s: String) -> [String] {
+        var out: [String] = []
+        var cur = ""
+        var quote: Character?
+        var escaped = false
+        for ch in s {
+            if escaped { cur.append(ch); escaped = false; continue }
+            if ch == "\\", quote != "'" { escaped = true; continue }
+            if let q = quote {
+                if ch == q { quote = nil } else { cur.append(ch) }
+                continue
+            }
+            if ch == "'" || ch == "\"" { quote = ch; continue }
+            if ch == " " || ch == "\t" || ch == "\n" {
+                if !cur.isEmpty { out.append(cur); cur = "" }
+                continue
+            }
+            cur.append(ch)
+        }
+        if escaped { cur.append("\\") }
+        if !cur.isEmpty { out.append(cur) }
+        return out
+    }
+}
+
 // MARK: - 操作执行
 
 final class Operations {
@@ -428,7 +546,40 @@ final class Operations {
 
     @discardableResult
     func extract(archive: String, names: [String], options: ExtractOptions,
-                 totalBytes: Int64, parent: NSWindow?) -> ProgressWindowController {
+                 totalBytes: Int64, parent: NSWindow?) -> ProgressWindowController? {
+        var options = options
+
+        // 「在覆盖前询问」和「不使用路径」是两件会悄悄丢数据的事，
+        // 都在启动引擎之前问清楚。
+        if options.overwrite == .ask || options.pathMode == .noPaths {
+            let paths = ExtractGuard.entryPaths(archive: archive, password: options.password)
+            if paths == nil, options.overwrite == .ask {
+                // 读不出清单（缺密码、坏包）时不能猜。按「跳过已存在」走，
+                // 引擎随后会把真正的原因报出来，总比静默覆盖掉文件好。
+                options.overwrite = .skip
+            }
+            if let paths, options.overwrite == .ask {
+                let hits = ExtractGuard.existing(
+                    ExtractGuard.landingPaths(paths, names: names, options: options))
+                if hits.isEmpty {
+                    options.overwrite = .overwrite
+                } else {
+                    guard let choice = OverwritePrompt.resolve(
+                        conflicts: hits, destination: options.destination, parent: parent)
+                    else { return nil }
+                    options.overwrite = choice
+                }
+            }
+            if let paths, options.pathMode == .noPaths {
+                let dup = ExtractGuard.duplicateNames(paths)
+                if !dup.isEmpty {
+                    let list = dup.prefix(10).joined(separator: "\n")
+                    guard DialogKit.confirm(S.pathsNo, S.duplicateNamesNoPaths + "\n\n" + list,
+                                            parent: parent) else { return nil }
+                }
+            }
+        }
+
         let model = ProgressModel(kind: .extract, subject: (archive as NSString).lastPathComponent)
         model.totalBytes = totalBytes
 
@@ -451,6 +602,9 @@ final class Operations {
         if options.eliminateDuplicate { args.append("-spe") }
         if !options.password.isEmpty { args.append("-p" + options.password) }
         args.append("-bsp1")
+        // -- 之后全是文件名。没有它，归档内以 - 或 @ 开头的条目会被当成
+        // 开关或列表文件，解压和改名直接报 Command Line Error。
+        args.append("--")
         args.append(archive)
         args.append(contentsOf: names)
 
@@ -466,30 +620,61 @@ final class Operations {
         model.totalBytes = totalBytes
         model.outputBytes = 0
 
-        var args = ["a", "-t" + options.format]
-        args.append("-mx\(options.level.rawValue)")
-        if !options.method.isEmpty { args.append("-m0=" + options.method) }
-        if !options.dictionary.isEmpty { args.append("-md=" + options.dictionary) }
-        if !options.wordSize.isEmpty { args.append("-mfb=" + options.wordSize) }
-        if !options.solidBlock.isEmpty { args.append("-ms=" + options.solidBlock) }
+        let fmt = options.format
+        // 各格式能接受的方法开关不是同一套。以下都是拿随包 7zz 逐个实测过的：
+        //   7z / zip / xz      -m0=方法
+        //   gzip / tar / bzip2 -mm=方法（-m0= 必报 E_INVALIDARG）
+        //   wim / hash         不收方法开关
+        // hash 还额外不收 -mx；它靠输出文件的扩展名决定算法（.sha1 / .sha256）。
+        let methodFlag: String? = {
+            switch fmt {
+            case "7z", "zip", "xz": return "-m0="
+            case "gzip", "tar", "bzip2": return "-mm="
+            default: return nil
+            }
+        }()
+        let isHash = fmt == "hash"
+        let supportsOrder = !["tar", "bzip2", "wim", "hash"].contains(fmt)
+        let supportsDict = ["7z", "zip", "xz"].contains(fmt)
+        let supportsSolid = fmt == "7z" || fmt == "xz"
+        let canEncrypt = fmt == "7z" || fmt == "zip"
+        let canEncryptNames = fmt == "7z"
+
+        var args = ["a", "-t" + fmt]
+        if !isHash { args.append("-mx\(options.level.rawValue)") }
+        if !options.method.isEmpty, let flag = methodFlag {
+            args.append(flag + options.method)
+        }
+        if !options.dictionary.isEmpty, supportsDict {
+            args.append("-md=" + options.dictionary)
+        }
+        // PPMd 的字长叫 order，开关是 -mo=；写 -mfb= 必报 E_INVALIDARG。
+        if !options.wordSize.isEmpty, supportsOrder {
+            args.append((options.method == "PPMd" ? "-mo=" : "-mfb=") + options.wordSize)
+        }
+        if !options.solidBlock.isEmpty, supportsSolid { args.append("-ms=" + options.solidBlock) }
         if !options.threads.isEmpty { args.append("-mmt=" + options.threads) }
         if !options.volumeSize.isEmpty { args.append("-v" + options.volumeSize) }
         if options.sharedFiles { args.append("-ssw") }
-        if !options.password.isEmpty {
+        // 不支持加密的格式带上 -p / -mhe=on 会直接报 E_INVALIDARG，
+        // 而且会让用户以为文件被加密了。两种情形下都忽略密码。
+        if !options.password.isEmpty, canEncrypt {
             args.append("-p" + options.password)
-            if options.encryptFileNames { args.append("-mhe=on") }
+            if options.encryptFileNames, canEncryptNames { args.append("-mhe=on") }
         }
         if options.deleteAfter { args.append("-sdel") }
         args.append(contentsOf: options.advanced.arguments)
         if !options.parameters.isEmpty {
-            args.append(contentsOf: options.parameters.split(separator: " ").map(String.init))
+            args.append(contentsOf: CommandLineSplitting.split(options.parameters))
         }
         args.append(contentsOf: options.updateMode.arguments)
         args.append("-bsp1")
+        args.append("--")
         args.append(archive)
         args.append(contentsOf: files)
 
-        return launch(args: args, model: model, parent: parent, workingDirectory: workingDirectory)
+        return launch(args: args, model: model, parent: parent,
+                      workingDirectory: workingDirectory, outputPath: archive)
     }
 
     // MARK: 测试
@@ -497,13 +682,68 @@ final class Operations {
     @discardableResult
     func test(archives: [String], password: String?, totalBytes: Int64,
               parent: NSWindow?) -> ProgressWindowController {
-        let model = ProgressModel(kind: .test,
-                                  subject: archives.first.map { ($0 as NSString).lastPathComponent } ?? "")
+        let subject: String
+        if archives.count == 1 { subject = (archives[0] as NSString).lastPathComponent }
+        else if let first = archives.first {
+            subject = "\((first as NSString).lastPathComponent) +\(archives.count - 1)"
+        } else { subject = "" }
+        let model = ProgressModel(kind: .test, subject: subject)
         model.totalBytes = totalBytes
-        var args = ["t", "-bsp1"]
-        if let p = password, !p.isEmpty { args.append("-p" + p) }
-        args.append(contentsOf: archives)
-        return launch(args: args, model: model, parent: parent)
+
+        func argsFor(_ a: String) -> [String] {
+            var args = ["t", "-bsp1"]
+            if let p = password, !p.isEmpty { args.append("-p" + p) }
+            args.append("--")
+            args.append(a)
+            return args
+        }
+
+        guard !archives.isEmpty else {
+            model.errors.append(S.mustSelectArchives)
+            model.succeeded = false
+            let wc = ProgressWindowController(model: model)
+            keep(wc)
+            wc.show()
+            wc.finish()
+            return wc
+        }
+        if archives.count == 1 {
+            return launch(args: argsFor(archives[0]), model: model, parent: parent)
+        }
+
+        // 7zz 的 t 只收一个归档，第二个会被当成「要测的条目名」。实测
+        // t a.7z corrupt.7z 回 exit=0 / Files: 0 / Everything is Ok，
+        // 坏包被整个漏掉。多选取串行逐个测，结果合进同一个进度窗。
+        let wc = ProgressWindowController(model: model)
+        keep(wc)
+        wc.show()
+        var allOK = true
+
+        func run(at i: Int) {
+            guard i < archives.count else {
+                model.succeeded = allOK && model.errors.isEmpty
+                wc.finish()
+                return
+            }
+            let task = EngineTask(arguments: argsFor(archives[i]))
+            wc.attach(task)
+            task.onMessage = { line in
+                if line.hasPrefix("ERROR:") || line.hasPrefix("WARNING:") {
+                    model.errors.append(line)
+                }
+            }
+            task.onProgress = { p in
+                model.update(percent: (i * 100 + p.percent) / archives.count,
+                             file: p.currentFile)
+            }
+            task.onFinish = { [weak self] r in
+                allOK = (self?.classify(r, model: model) ?? false) && allOK
+                run(at: i + 1)
+            }
+            task.run()
+        }
+        run(at: 0)
+        return wc
     }
 
     // MARK: 校验和（结果直接给一个文本窗口）
@@ -512,20 +752,34 @@ final class Operations {
               parent: NSWindow?) {
         var args = ["h"]
         if let v = kind.switchValue { args.append("-scrc" + v) }
+        args.append("--")
         args.append(contentsOf: files)
 
         DispatchQueue.global(qos: .userInitiated).async {
-            let r = try? Engine.runSync(args)
-            var lines: [String] = []
-            for line in (r?.stdout ?? "").split(separator: "\n") {
-                let s = String(line)
-                if s.contains(" = ") || s.hasPrefix("----") { lines.append(s) }
+            // 文件系统那一路传进来的是相对名，必须给进程设工作目录。
+            // 原来 runSync 没有这个参数，7zz 在默认目录里找不到文件，
+            // 回 exit=1，结果窗口里只有 stderr。
+            let result: Result<RunResult, Error>
+            do {
+                result = .success(try Engine.runSync(args, currentDirectory: workingDirectory))
+            } catch {
+                result = .failure(error)
             }
             DispatchQueue.main.async {
-                if lines.isEmpty {
-                    TextWindow.show(title: "7-Zip", text: (r?.stderr ?? "").trimmingCharacters(in: .whitespacesAndNewlines))
-                } else {
-                    TextWindow.show(title: kind.title, text: lines.joined(separator: "\n"))
+                switch result {
+                case .failure(let e):
+                    TextWindow.show(title: S.calcChecksum, text: e.localizedDescription)
+                case .success(let r):
+                    // 7zz 的哈希行是 "AF083B2D   12  hello.txt"，里面没有 " = "。
+                    // 原来按 " = " 过滤，窗口里只剩几条分隔线。整段原文都留着。
+                    let out = r.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
+                    let err = r.stderr.trimmingCharacters(in: .whitespacesAndNewlines)
+                    var text = out
+                    if r.exitCode != 0, !err.isEmpty {
+                        text += (text.isEmpty ? "" : "\n\n") + err
+                    }
+                    TextWindow.show(title: r.exitCode == 0 ? kind.title : S.calcChecksum,
+                                    text: text.isEmpty ? err : text)
                 }
             }
         }
@@ -539,6 +793,7 @@ final class Operations {
         let model = ProgressModel(kind: .compress, subject: (archive as NSString).lastPathComponent)
         var args = ["rn", "-bsp1"]
         if let p = password, !p.isEmpty { args.append("-p" + p) }
+        args.append("--")
         args.append(archive)
         for p in pairs { args.append(p.from); args.append(p.to) }
         return launch(args: args, model: model, parent: parent)
@@ -550,6 +805,7 @@ final class Operations {
         let model = ProgressModel(kind: .delete, subject: (archive as NSString).lastPathComponent)
         var args = ["d", "-bsp1", "-y"]
         if let p = password, !p.isEmpty { args.append("-p" + p) }
+        args.append("--")
         args.append(archive)
         args.append(contentsOf: names)
         return launch(args: args, model: model, parent: parent)
@@ -651,7 +907,7 @@ final class Operations {
     /// 归档里所有条目的未压缩总大小，用来给进度条定标。
     /// 读的是引擎自己给的清单（l -slt），不是猜的。
     static func archiveTotalSize(at path: String) -> Int64 {
-        guard let r = try? Engine.runSync(["l", "-slt", "-ba", path]) else { return 0 }
+        guard let r = try? Engine.runSync(["l", "-slt", "-ba", "--", path]) else { return 0 }
         var total: Int64 = 0
         r.stdout.enumerateLines { line, _ in
             guard line.hasPrefix("Size = ") else { return }
@@ -670,15 +926,62 @@ final class Operations {
         let base = (file as NSString).lastPathComponent
         // 归档名给到 .7z 就行，.001 是引擎自己加的
         // （实测给 out.7z.001 会得到 out.7z.001.001）
-        let args = ["a", "-t7z", "-mx0", "-v\(volumeBytes)b", "-bsp1",
+        let args = ["a", "-t7z", "-mx0", "-v\(volumeBytes)b", "-bsp1", "--",
                     dir + "/" + base + ".7z", base]
         return launch(args: args, model: model, parent: parent, workingDirectory: dir)
     }
 
     // MARK: 引擎任务统一驱动
 
+    /// 把引擎的退出码与它自己写在输出里的话翻成进度窗里的错误。
+    /// 返回这次调用算不算成功。
+    private func classify(_ r: RunResult, model: ProgressModel) -> Bool {
+        // 缺密码时不同命令给的退出码不一样：l -slt 回 255，t 回 2，
+        // 但两者都会自己写 "Enter password:"。先按系统原文认这件事，
+        // 再按退出码分类，免得把「要密码」报成中断或者丢一整段输出。
+        if r.exitCode != 0 {
+            let text = r.allText
+            if text.contains("Enter password") || text.contains("Wrong password")
+                || text.contains("Cannot open encrypted") {
+                model.errors.append(S.cantOpenEncrypted
+                    .replacingOccurrences(of: "'{0}'", with: "")
+                    .replacingOccurrences(of: "{0}", with: ""))
+                return false
+            }
+        }
+        switch r.exitCode {
+        case 0:
+            break
+        case 1:
+            // exit=1 是 Warning。引擎未必写 "WARNING:" 前缀，先把系统
+            // 自己写在输出里的 WARN 行找出来，读不到才给一句通用说明。
+            if model.errors.isEmpty {
+                let warn = r.allText.split(separator: "\n")
+                    .map { $0.trimmingCharacters(in: .whitespaces) }
+                    .last { $0.localizedCaseInsensitiveContains("warn") }
+                if let w = warn, !w.isEmpty { model.errors.append(w) }
+                else { model.errors.append("7-Zip: warning (exit 1)") }
+            }
+        case 255:
+            // 走到这里说明不是缺密码，才是真的被中断（Break signaled）。
+            model.errors.append(S.breakSignaled)
+        case 8:
+            model.errors.append(S.notEnoughMemory)
+        default:
+            // 进程没起来时 exitCode 是 -1。原来的 <= 1 会把它判成成功。
+            // 这里一律带上引擎自己的原文，实在没有才给退出码。
+            let tail = r.stderr.trimmingCharacters(in: .whitespacesAndNewlines)
+            let out = r.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
+            let message = tail.isEmpty ? out : tail
+            if model.errors.isEmpty, !message.isEmpty { model.errors.append(message) }
+            if model.errors.isEmpty { model.errors.append("7-Zip: exit code \(r.exitCode)") }
+        }
+        return (r.exitCode == 0 || r.exitCode == 1) && model.errors.isEmpty
+    }
+
     private func launch(args: [String], model: ProgressModel, parent: NSWindow?,
-                        workingDirectory: String? = nil) -> ProgressWindowController {
+                        workingDirectory: String? = nil,
+                        outputPath: String? = nil) -> ProgressWindowController {
         let wc = ProgressWindowController(model: model)
         keep(wc)
 
@@ -688,28 +991,20 @@ final class Operations {
         task.onProgress = { p in
             model.update(percent: p.percent, file: p.currentFile)
         }
-        task.onMessage = { [weak self] line in
+        task.onMessage = { line in
             if line.hasPrefix("ERROR:") || line.hasPrefix("WARNING:") {
                 model.errors.append(line)
             }
-            _ = self
         }
         task.onFinish = { [weak self] r in
-            model.succeeded = r.exitCode <= 1 && model.errors.isEmpty
-            switch r.exitCode {
-            case 0, 1: break
-            case 255: model.errors.append(S.breakSignaled)
-            case 8: model.errors.append(S.notEnoughMemory)
-            default:
-                let tail = r.stderr.trimmingCharacters(in: .whitespacesAndNewlines)
-                if model.errors.isEmpty, !tail.isEmpty { model.errors.append(tail) }
-            }
-            if model.kind == .compress {
-                let sz = Self.sizeOfItem(at: model.subject)
+            model.succeeded = self?.classify(r, model: model) ?? false
+            // 压缩率要用归档的真实路径去量。原来拿 model.subject（只有
+            // 文件名）去 stat，永远取不到值，所以这一项一直不显示。
+            if model.kind == .compress, let outputPath {
+                let sz = Self.sizeOfItem(at: outputPath)
                 if sz > 0 { model.outputBytes = sz }
             }
             wc.finish()
-            _ = self
         }
 
         wc.show()

@@ -71,12 +71,14 @@ enum FolderLoader {
     static func loadArchive(_ archivePath: String, password: String?) throws -> ArchiveListing {
         var args = ["l", "-slt"]
         if let pw = password, !pw.isEmpty { args.append("-p" + pw) }
+        args.append("--")
         args.append(archivePath)
 
         let r = try Engine.runSync(args)
 
         let text = r.stdout
-        if text.contains("Cannot open encrypted archive") || text.contains("Wrong password") {
+        if text.contains("Cannot open encrypted archive") || text.contains("Wrong password")
+            || text.contains("Enter password") {
             throw EngineError.passwordRequired
         }
         if r.exitCode >= 2 && !text.contains("Path = ") {

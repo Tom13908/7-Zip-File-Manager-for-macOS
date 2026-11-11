@@ -283,3 +283,5 @@
 "The archive already exists. Merge the new files into it, or choose another name." = "压缩包已经存在。可以把新文件并进去，也可以换一个名字。";
 "Merge into the existing archive" = "并入现有的压缩包";
 "Choose another name" = "换一个名字";
+"Volume size must be a number with an optional k, m or g suffix (for example 100M)." = "分卷大小必须是数字，可以带 k、m 或 g 后缀（例如 100M）。";
+"Extracting without paths will overwrite files that share the same name. Continue?" = "不使用路径解压会覆盖同名文件。仍要继续吗？";

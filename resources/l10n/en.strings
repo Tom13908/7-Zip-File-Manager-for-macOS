@@ -283,3 +283,5 @@
 "The archive already exists. Merge the new files into it, or choose another name." = "The archive already exists. Merge the new files into it, or choose another name.";
 "Merge into the existing archive" = "Merge into the existing archive";
 "Choose another name" = "Choose another name";
+"Volume size must be a number with an optional k, m or g suffix (for example 100M)." = "Volume size must be a number with an optional k, m or g suffix (for example 100M).";
+"Extracting without paths will overwrite files that share the same name. Continue?" = "Extracting without paths will overwrite files that share the same name. Continue?";

@@ -282,9 +282,10 @@ extension Engine {
 
     /// 同步跑一条命令（列表、探测用，不出进度）
     @discardableResult
-    static func runSync(_ arguments: [String], timeout: TimeInterval? = nil) throws -> RunResult {
+    static func runSync(_ arguments: [String], currentDirectory: String? = nil,
+                        timeout: TimeInterval? = nil) throws -> RunResult {
         // 同步调用不能用主队列回调，否则死锁
-        let task = EngineTask(arguments: arguments,
+        let task = EngineTask(arguments: arguments, currentDirectory: currentDirectory,
                               callbackQueue: DispatchQueue(label: "7zz.sync"))
         let sem = DispatchSemaphore(value: 0)
         var result: RunResult?

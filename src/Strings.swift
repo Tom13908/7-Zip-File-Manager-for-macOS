@@ -369,6 +369,12 @@ enum S {
     static var breakSignaled: String { L("Break signaled") }
     static var notEnoughMemory: String { L("Not enough memory") }
     static var calcChecksum: String { L("Calculate checksum") }
+    static var invalidVolumeSize: String {
+        L("Volume size must be a number with an optional k, m or g suffix (for example 100M).")
+    }
+    static var duplicateNamesNoPaths: String {
+        L("Extracting without paths will overwrite files that share the same name. Continue?")
+    }
 
     // MARK: 拆分 / 合并
 
@@ -496,12 +502,20 @@ enum UpdateMode: Int, CaseIterable {
     }
 
     /// 对应 7zz 的参数（7-Zip 的 GUI 用 -u<mode> 表达同样的语义）
+    ///
+    /// sync 原先是 ["-u-", "-up1q1r1x1y1z1w1"]，实测必报
+    /// "incorrect update switch"：ArchiveCommandLine.cpp:869 的
+    /// kUpdatePairStateNotSupportedActions 禁止 r1，而且 -u- 会把后面
+    /// 那组动作整个作废。实测 -up0q3r2x2y2z1w2 才是真同步：
+    /// 归档独有的删除、磁盘改过的更新、磁盘新增的加入、两边都有的保留。
+    /// 注意 freshen 目前用的是同一组参数，实测效果也是同步；
+    /// 这是既有问题，本次排查没有动它。
     var arguments: [String] {
         switch self {
         case .add: return ["-u-"]          // 只加新文件，不动已存在的
         case .update: return []            // 默认：更新已存在 + 追加新文件
         case .freshen: return ["-up0q3r2x2y2z1w2"]
-        case .sync: return ["-u-", "-up1q1r1x1y1z1w1"]
+        case .sync: return ["-up0q3r2x2y2z1w2"]
         }
     }
 }
@@ -531,7 +545,10 @@ enum ExtractOverwriteMode: Int, CaseIterable {
         }
     }
 
-    /// ask 没有对应的命令行开关——GUI 自己弹窗问，不交给引擎
+    /// ask 没有对应的命令行开关。7zz 的询问走 stdin，而 EngineTask 把 stdin
+    /// 接到 /dev/null；原来 ask 返回 nil 却照样带 -y，等于「全部答 Yes」，
+    /// 用户看到的是静默覆盖。现在由 Operations.extract 在启动前做一次
+    /// 冲突预检并弹窗，再把用户的选择换成下面四种之一。
     var argument: String? {
         switch self {
         case .ask: return nil

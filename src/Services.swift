@@ -75,7 +75,9 @@ final class ServicesProvider: NSObject {
         return [files[0]]
     }
 
-    private func retain(_ wc: ProgressWindowController) {
+    /// 用户在「在覆盖前询问」里点了取消时 extract 返回 nil，这里不做任何事
+    private func retain(_ wc: ProgressWindowController?) {
+        guard let wc else { return }
         ServicesProvider.running.append(wc)
         ServicesProvider.running.removeAll { $0.model.finished }
     }

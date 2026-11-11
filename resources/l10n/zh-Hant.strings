@@ -283,3 +283,5 @@
 "The archive already exists. Merge the new files into it, or choose another name." = "壓縮檔已經存在。可以把新檔案加進去，也可以改用其他名稱。";
 "Merge into the existing archive" = "加入現有的壓縮檔";
 "Choose another name" = "改用其他名稱";
+"Volume size must be a number with an optional k, m or g suffix (for example 100M)." = "分卷大小必須是數字，可以帶 k、m 或 g 後綴（例如 100M）。";
+"Extracting without paths will overwrite files that share the same name. Continue?" = "不使用路徑解壓會覆蓋同名檔案。仍要繼續嗎？";

@@ -33,7 +33,7 @@ APP_NAME = "7-Zip File Manager"
 # 对外命名用 <ENGINE_VERSION>_v<APP_VERSION>，例如 26.03_v0.02。
 # Info.plist 的版本字段只接受点分数字，所以那里只能写 APP_VERSION。
 ENGINE_VERSION = "26.03"
-APP_VERSION = "0.03"
+APP_VERSION = "0.04"
 ARCHIVE_UTI = "org.7-zip.archive"
 
 # 最低系统版本。必须与两个架构切片的 minos 一致（见 scripts/build-app.sh 的 MIN_OS）：

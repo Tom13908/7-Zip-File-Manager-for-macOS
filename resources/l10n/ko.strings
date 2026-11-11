@@ -283,3 +283,5 @@
 "The archive already exists. Merge the new files into it, or choose another name." = "압축 파일이 이미 있습니다. 새 파일을 추가하거나 다른 이름을 사용하세요.";
 "Merge into the existing archive" = "기존 압축 파일에 추가";
 "Choose another name" = "다른 이름 사용";
+"Volume size must be a number with an optional k, m or g suffix (for example 100M)." = "Volume size must be a number with an optional k, m or g suffix (for example 100M).";
+"Extracting without paths will overwrite files that share the same name. Continue?" = "Extracting without paths will overwrite files that share the same name. Continue?";

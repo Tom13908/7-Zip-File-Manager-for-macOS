@@ -502,6 +502,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
         var args = ["e", "-o" + dir, "-y"]
         if let pw = panel.password, !pw.isEmpty { args.append("-p" + pw) }
+        args.append("--")
         args.append(archive)
         args.append(entry.fullPath)
 
@@ -530,6 +531,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
             try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
             var args = ["x", "-o" + dir, "-y"]
             if let pw = activePanel.password, !pw.isEmpty { args.append("-p" + pw) }
+            args.append("--")
             args.append(activePanel.location.root)
             args.append(contentsOf: entries.map { $0.fullPath })
             DispatchQueue.global(qos: .userInitiated).async {
@@ -561,6 +563,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
             try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
             var args = ["e", "-o" + dir, "-y"]
             if let pw = activePanel.password, !pw.isEmpty { args.append("-p" + pw) }
+            args.append("--")
             args.append(activePanel.location.root)
             args.append(e.fullPath)
             DispatchQueue.global(qos: .userInitiated).async {
@@ -886,8 +889,9 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         if panel.location.isArchive {
             let dir = NSTemporaryDirectory() + "7zip-" + UUID().uuidString
             try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
-            var args = ["x", "-o" + dir, "-y"]
+            var args = ["x", "-o" + dir, "-y", "-snld10"]
             if let pw = panel.password, !pw.isEmpty { args.append("-p" + pw) }
+            args.append("--")
             args.append(panel.location.root)
             args.append(contentsOf: entries.map { $0.fullPath })
             DispatchQueue.global(qos: .userInitiated).async {
@@ -1216,6 +1220,7 @@ enum ArchiveSizer {
     static func totalSize(archive: String, password: String?) -> Int64 {
         var args = ["l", "-slt"]
         if let p = password, !p.isEmpty { args.append("-p" + p) }
+        args.append("--")
         args.append(archive)
         guard let r = try? Engine.runSync(args) else { return 0 }
         let listing = FolderLoader.parseListing(r.stdout)

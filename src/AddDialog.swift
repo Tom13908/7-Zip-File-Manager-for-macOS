@@ -390,10 +390,31 @@ private final class AddDialogController {
         o.updateMode = UpdateMode(rawValue: updateCombo.indexOfSelectedItem) ?? .update
         o.deleteAfter = deleteCheck.state == .on
         o.sharedFiles = sharedCheck.state == .on
-        o.password = showPwCheck.state == .on ? plainPw.stringValue : pw1.stringValue
-        o.encryptFileNames = encNamesCheck.state == .on
+        // 换格式前填过的密码还留在框里。gzip / tar / bzip2 / xz / wim / hash
+        // 不支持加密，带上 -p 或 -mhe=on 会让引擎直接报 E_INVALIDARG。
+        o.password = spec.encrypt
+            ? (showPwCheck.state == .on ? plainPw.stringValue : pw1.stringValue)
+            : ""
+        o.encryptFileNames = spec.encryptFileNames && encNamesCheck.state == .on
         o.advanced = advanced
+
+        // 分卷框可手输。7zz 遇到 "abc" 只回一句 Command Line Error，
+        // 用户看不出是这一格填错了，所以在这里先挡下来。
+        if !o.volumeSize.isEmpty, !Self.validVolumeSize(o.volumeSize) {
+            DialogKit.alert(S.addTitle, S.invalidVolumeSize, style: .warning, parent: parent)
+            return nil
+        }
         return (archive, o)
+    }
+
+    /// 合法的 -v 值：数字，可带一个 b/k/m/g/t 后缀，且必须大于 0。
+    private static func validVolumeSize(_ s: String) -> Bool {
+        let v = s.trimmingCharacters(in: .whitespaces).lowercased()
+        guard let suffix = v.last, suffix.isNumber || "bkmgt".contains(suffix) else { return false }
+        let digits = v.prefix(while: { $0.isNumber })
+        guard let n = Int(digits), n > 0 else { return false }
+        let rest = v.dropFirst(digits.count)
+        return rest.isEmpty || (rest.count == 1 && "bkmgt".contains(rest.first!))
     }
 
     // MARK: 组装界面
@@ -575,6 +596,7 @@ private final class AddDialogController {
             nameCombo.stringValue = "\(stem).\(spec.ext)"
         }
         refreshAll()
+        if spec.name == "Hash" { syncHashExtension() }
     }
 
     private func levelChanged() {
@@ -590,10 +612,25 @@ private final class AddDialogController {
     }
 
     private func methodChanged() {
+        if spec.name == "Hash" { syncHashExtension() }
         refreshDictionary()
         refreshOrder()
         refreshSolid()
         refreshThreads()
+    }
+
+    /// hash 归档靠输出文件的扩展名决定算法（实测 .sha1 出 SHA-1、
+    /// .sha256 出 SHA-256；写成 .dat 会直接 E_INVALIDARG）。
+    /// 所以方法下拉一变，归档名的后缀要跟着变，引擎侧不需要 -m0 / -scrc。
+    private func syncHashExtension() {
+        let method = (value(of: methodCombo, in: methodChoices)
+                      ?? spec.methods.first ?? "SHA256").lowercased()
+        let current = nameCombo.stringValue
+        let stem = (current as NSString).deletingPathExtension
+        let ext = (current as NSString).pathExtension.lowercased()
+        if ext.isEmpty || ext == "sha1" || ext == "sha256" {
+            nameCombo.stringValue = "\(stem).\(method)"
+        }
     }
 
     // MARK: 各下拉的内容
