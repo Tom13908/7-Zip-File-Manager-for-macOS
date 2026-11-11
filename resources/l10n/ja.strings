@@ -233,6 +233,7 @@
 "Test Archive" = "書庫をテスト";
 "Testing" = "テスト";
 "The system cannot find the path specified:" = "指定されたパスが見つかりません:";
+"This format can hold one file only. Select a single item, or choose 7z, Zip or Tar." = "この形式には 1 つのファイルしか入れられません。1 項目だけを選ぶか、7z / Zip / Tar を選んでください。";
 "Time" = "時刻";
 "Toolbars" = "ツールバー";
 "Tools" = "ツール";
@@ -258,7 +259,7 @@
 "archive time = latest" = "書庫日時 = 最新";
 "creation time" = "作成日時";
 "hard links" = "ハード リンク";
-"help.text" = "7-Zip File Manager — 使い方\n\nツールバー\n  Add        選択した項目を書庫にまとめます（「Add to archive」ダイアログを開きます）\n  Extract    選択した書庫、または書庫内で選択した項目を展開します\n  Test       選択した書庫の整合性を検査します\n  Copy       選択した項目を別のフォルダーにコピーします\n  Move       選択した項目を別のフォルダーに移動します\n  Delete     ゴミ箱へ移動します（書庫内では書庫から削除します）\n  Info       プロパティを表示します\n\nキーボード\n  Enter         開く / 下の階層へ\n  Ctrl+PgDn     選択した書庫の中へ入る\n  Shift+Enter   既定のアプリで開く\n  Backspace     1 つ上の階層へ\n  F2            名前を変更\n  F3 / スペース ファイルの内容を表示\n  F4            既定のアプリで編集\n  F5 / F6       コピー先 / 移動先\n  F7            フォルダーを作成\n  Del           削除\n  F9            1 パネル / 2 パネルの切り替え\n  Tab           左右のパネルを切り替え\n  Ctrl+1..4     大きいアイコン / 小さいアイコン / 一覧 / 詳細\n  Cmd+R         再読み込み\n  Cmd+A         すべて選択\n  Cmd+I         プロパティ\n\n書庫の中\n  フォルダーをダブルクリックすると下の階層へ進みます。中の書庫をダブルクリックすると\n  一時フォルダーに展開してから開きます。\n\nコンテキストメニュー\n  ファイル一覧を右クリックするとファイル操作、列見出しを右クリックすると\n  表示する列と並べ替え方を選べます。";
+"help.text" = "7-Zip File Manager — 使い方\n\nツールバー\n  Add               選択した項目を書庫にまとめます（「Add to archive」ダイアログを開きます）\n  Extract           選択した書庫、または書庫内で選択した項目を展開します\n  展開（スマート）  展開先を自動で決めて展開します\n  Test              選択した書庫の整合性を検査します\n  Copy              選択した項目を別のフォルダーにコピーします\n  Move              選択した項目を別のフォルダーに移動します\n  Delete            ゴミ箱へ移動します（書庫内では書庫から削除します）\n  Info              プロパティを表示します\n\nキーボード\n  Enter         開く / 下の階層へ\n  Ctrl+PgDn     選択した書庫の中へ入る\n  Shift+Enter   既定のアプリで開く\n  Backspace     1 つ上の階層へ\n  F2            名前を変更\n  F3 / スペース ファイルの内容を表示\n  F4            既定のアプリで編集\n  F5 / F6       コピー先 / 移動先\n  F7            フォルダーを作成\n  Cmd+Backspace  削除\n  F9            1 パネル / 2 パネルの切り替え\n  Tab           左右のパネルを切り替え\n  Ctrl+1..4     大きいアイコン / 小さいアイコン / 一覧 / 詳細\n  Cmd+R         再読み込み\n  Cmd+A         すべて選択\n  Cmd+I         プロパティ\n\n書庫の中\n  フォルダーをダブルクリックすると下の階層へ進みます。中の書庫をダブルクリックすると\n  一時フォルダーに展開してから開きます。\n\nコンテキストメニュー\n  ファイル一覧を右クリックするとファイル操作、列見出しを右クリックすると\n  表示する列と並べ替え方を選べます。";
 "iNode" = "iノード";
 "items" = "項目";
 "keep access time" = "アクセス日時を保持";
@@ -285,3 +286,4 @@
 "Choose another name" = "別の名前を付ける";
 "Volume size must be a number with an optional k, m or g suffix (for example 100M)." = "Volume size must be a number with an optional k, m or g suffix (for example 100M).";
 "Extracting without paths will overwrite files that share the same name. Continue?" = "Extracting without paths will overwrite files that share the same name. Continue?";
+"The volume files already exist. Replace them?" = "分割ファイルは既に存在します。置き換えますか？";

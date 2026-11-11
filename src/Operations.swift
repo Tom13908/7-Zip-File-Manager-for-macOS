@@ -453,6 +453,13 @@ private enum ExtractGuard {
             let raw = options.pathMode == .noPaths
                 ? (p as NSString).lastPathComponent
                 : p
+            // -spf2 用的是归档里写的绝对路径，落地位置根本不在 destination 下面。
+            // 这里若还按 destination 拼，冲突预检会查错地方：真正的目标没查，
+            // 反倒可能报一个假的冲突。
+            if options.pathMode == .absolute {
+                let abs = (raw as NSString).standardizingPath
+                return abs.hasPrefix("/") ? abs : nil
+            }
             let joined = (dest as NSString).appendingPathComponent(raw)
             let std = (joined as NSString).standardizingPath
             guard std == dest || std.hasPrefix(dest + "/") else { return nil }
@@ -546,7 +553,8 @@ final class Operations {
 
     @discardableResult
     func extract(archive: String, names: [String], options: ExtractOptions,
-                 totalBytes: Int64, parent: NSWindow?) -> ProgressWindowController? {
+                 totalBytes: Int64, parent: NSWindow?,
+                 completion: (() -> Void)? = nil) -> ProgressWindowController? {
         var options = options
 
         // 「在覆盖前询问」和「不使用路径」是两件会悄悄丢数据的事，
@@ -608,14 +616,15 @@ final class Operations {
         args.append(archive)
         args.append(contentsOf: names)
 
-        return launch(args: args, model: model, parent: parent)
+        return launch(args: args, model: model, parent: parent, completion: completion)
     }
 
     // MARK: 压缩
 
     @discardableResult
     func add(archive: String, files: [String], workingDirectory: String, options: AddOptions,
-             totalBytes: Int64, parent: NSWindow?) -> ProgressWindowController {
+             totalBytes: Int64, parent: NSWindow?,
+             completion: (() -> Void)? = nil) -> ProgressWindowController {
         let model = ProgressModel(kind: .compress, subject: (archive as NSString).lastPathComponent)
         model.totalBytes = totalBytes
         model.outputBytes = 0
@@ -674,7 +683,8 @@ final class Operations {
         args.append(contentsOf: files)
 
         return launch(args: args, model: model, parent: parent,
-                      workingDirectory: workingDirectory, outputPath: archive)
+                      workingDirectory: workingDirectory, outputPath: archive,
+                      completion: completion)
     }
 
     // MARK: 测试
@@ -789,33 +799,36 @@ final class Operations {
 
     @discardableResult
     func renameInArchive(archive: String, pairs: [(from: String, to: String)],
-                         password: String?, parent: NSWindow?) -> ProgressWindowController {
+                         password: String?, parent: NSWindow?,
+                         completion: (() -> Void)? = nil) -> ProgressWindowController {
         let model = ProgressModel(kind: .compress, subject: (archive as NSString).lastPathComponent)
         var args = ["rn", "-bsp1"]
         if let p = password, !p.isEmpty { args.append("-p" + p) }
         args.append("--")
         args.append(archive)
         for p in pairs { args.append(p.from); args.append(p.to) }
-        return launch(args: args, model: model, parent: parent)
+        return launch(args: args, model: model, parent: parent, completion: completion)
     }
 
     @discardableResult
     func deleteInArchive(archive: String, names: [String], password: String?,
-                         parent: NSWindow?) -> ProgressWindowController {
+                         parent: NSWindow?,
+                         completion: (() -> Void)? = nil) -> ProgressWindowController {
         let model = ProgressModel(kind: .delete, subject: (archive as NSString).lastPathComponent)
         var args = ["d", "-bsp1", "-y"]
         if let p = password, !p.isEmpty { args.append("-p" + p) }
         args.append("--")
         args.append(archive)
         args.append(contentsOf: names)
-        return launch(args: args, model: model, parent: parent)
+        return launch(args: args, model: model, parent: parent, completion: completion)
     }
 
     // MARK: 复制 / 移动 / 删除（纯文件系统）
 
     @discardableResult
     func copyOrMove(_ urls: [URL], to destination: String, move: Bool,
-                    parent: NSWindow?) -> ProgressWindowController {
+                    parent: NSWindow?,
+                    completion: (() -> Void)? = nil) -> ProgressWindowController {
         let model = ProgressModel(kind: move ? .move : .copy, subject: destination)
         let total = urls.reduce(Int64(0)) { $0 + Self.sizeOfItem(at: $1.path) }
         model.totalBytes = total
@@ -856,6 +869,7 @@ final class Operations {
                 model.errors = errors
                 model.succeeded = errors.isEmpty
                 wc.finish()
+                completion?()
             }
         }
         return wc
@@ -918,8 +932,25 @@ final class Operations {
 
     // MARK: 拆分文件
 
+    /// 拆分会产生 `<文件名>.7z` 和 `<文件名>.7z.001`… 这一组文件。
+    /// 重做之前必须先清掉旧的：7zz 对多分卷归档不支持增量更新，直接再跑一次
+    /// 只会回 "Updating for multivolume archives is not implemented"。
+    /// 只认三位数字的分卷后缀，别把 `x.7z.backup` 也算进来。
+    static func splitOutputs(for file: String) -> [String] {
+        let dir = (file as NSString).deletingLastPathComponent
+        let stem = (file as NSString).lastPathComponent + ".7z"
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: dir)) ?? []
+        return names.filter { name in
+            if name == stem { return true }
+            guard name.hasPrefix(stem + ".") else { return false }
+            let tail = name.dropFirst(stem.count + 1)
+            return tail.count == 3 && tail.allSatisfy(\.isNumber)
+        }.sorted().map { (dir as NSString).appendingPathComponent($0) }
+    }
+
     @discardableResult
-    func split(file: String, volumeBytes: Int64, parent: NSWindow?) -> ProgressWindowController {
+    func split(file: String, volumeBytes: Int64, parent: NSWindow?,
+               completion: (() -> Void)? = nil) -> ProgressWindowController {
         let model = ProgressModel(kind: .split, subject: (file as NSString).lastPathComponent)
         model.totalBytes = Self.sizeOfItem(at: file)
         let dir = (file as NSString).deletingLastPathComponent
@@ -928,7 +959,8 @@ final class Operations {
         // （实测给 out.7z.001 会得到 out.7z.001.001）
         let args = ["a", "-t7z", "-mx0", "-v\(volumeBytes)b", "-bsp1", "--",
                     dir + "/" + base + ".7z", base]
-        return launch(args: args, model: model, parent: parent, workingDirectory: dir)
+        return launch(args: args, model: model, parent: parent, workingDirectory: dir,
+                      completion: completion)
     }
 
     // MARK: 引擎任务统一驱动
@@ -981,7 +1013,8 @@ final class Operations {
 
     private func launch(args: [String], model: ProgressModel, parent: NSWindow?,
                         workingDirectory: String? = nil,
-                        outputPath: String? = nil) -> ProgressWindowController {
+                        outputPath: String? = nil,
+                        completion: (() -> Void)? = nil) -> ProgressWindowController {
         let wc = ProgressWindowController(model: model)
         keep(wc)
 
@@ -1005,6 +1038,7 @@ final class Operations {
                 if sz > 0 { model.outputBytes = sz }
             }
             wc.finish()
+            completion?()
         }
 
         wc.show()

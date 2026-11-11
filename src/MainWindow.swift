@@ -169,6 +169,10 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
     private var activeIndex = 0
     var activePanel: FilePanelView { panels[max(0, min(activeIndex, panels.count - 1))] }
 
+    /// 窗口关掉之后通知外面（AppDelegate 用它把 mainWindow 置空，
+    /// 否则点 Dock 图标会去 makeKeyAndOrderFront 一个已经关闭的窗口）。
+    var onClose: (() -> Void)?
+
     private var toolbarHeight: NSLayoutConstraint!
     private var configObserver: NSObjectProtocol?
 
@@ -599,10 +603,14 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         else { return }
 
         if activePanel.location.isArchive {
-            operations.renameInArchive(archive: activePanel.location.root,
+            // 改归档是异步任务，立刻 refresh 读到的还是旧清单，
+            // 列表会一直显示旧名字直到用户手动刷新。等任务真正结束再刷。
+            let panel = activePanel
+            operations.renameInArchive(archive: panel.location.root,
                                        pairs: [(e.fullPath, replacingLast(e.fullPath, with: newName))],
-                                       password: activePanel.password, parent: window)
-            activePanel.refresh(preserveSelection: false)
+                                       password: panel.password, parent: window) {
+                panel.refresh(preserveSelection: false)
+            }
         } else {
             let dst = ((e.fullPath as NSString).deletingLastPathComponent as NSString)
                 .appendingPathComponent(newName)
@@ -716,10 +724,13 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         guard DialogKit.confirm(title, message, parent: window) else { return }
 
         if activePanel.location.isArchive {
-            operations.deleteInArchive(archive: activePanel.location.root,
+            // 同 doRename：删除也是异步的，刷新必须等引擎写完归档
+            let panel = activePanel
+            operations.deleteInArchive(archive: panel.location.root,
                                        names: entries.map { $0.fullPath },
-                                       password: activePanel.password, parent: window)
-            activePanel.refresh(preserveSelection: false)
+                                       password: panel.password, parent: window) {
+                panel.refresh(preserveSelection: false)
+            }
             return
         }
 
@@ -775,12 +786,18 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
                 sub.destination = Operations.defaultExtractFolder(archive: a, fallbackDir: dst)
                 let total = ArchiveSizer.totalSize(archive: a, password: nil)
                 operations.extract(archive: a, names: [], options: sub,
-                                   totalBytes: total, parent: window)
+                                   totalBytes: total, parent: window) {
+                    // 落点可能就在当前目录，解完要让新文件出现在列表里
+                    panel.refresh(preserveSelection: false)
+                }
             }
             return
         }
         let total = ArchiveSizer.totalSize(archive: first, password: o.password.isEmpty ? nil : o.password)
-        operations.extract(archive: first, names: [], options: o, totalBytes: total, parent: window)
+        operations.extract(archive: first, names: [], options: o, totalBytes: total,
+                           parent: window) {
+            panel.refresh(preserveSelection: false)
+        }
         _ = dir
         Settings.shared.lastExtractPath = o.destination
     }
@@ -811,6 +828,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
     /// 对一批归档逐个做智能解压。列表里点「解压（智能）」走这里，
     /// 自检通道（--automation 的 unzip）也走这里，保证测的就是用户点的那条路。
     func smartExtract(_ archives: [String]) {
+        let panel = activePanel
         // 一个面板里的归档都在同一个目录，所以冲突问题只问一次
         var answered: ExtractOverwriteMode?
         for a in archives {
@@ -839,7 +857,9 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
             try? FileManager.default.createDirectory(atPath: dest, withIntermediateDirectories: true)
             operations.extract(archive: a, names: [], options: o,
                                totalBytes: ArchiveSizer.totalSize(archive: a, password: nil),
-                               parent: window)
+                               parent: window) {
+                panel.refresh(preserveSelection: false)
+            }
         }
     }
 
@@ -852,18 +872,26 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         let sel = panel.selectedEntries()
         let files = sel.isEmpty ? panel.entries.map { $0.name } : sel.map { $0.name }
         guard !files.isEmpty else { return }
+        // 单流格式（gzip/bzip2/xz）连文件夹都不收，要提前告诉对话框
+        let hasFolder = (sel.isEmpty ? panel.entries : sel).contains { $0.isDir }
         let total = sel.isEmpty
             ? panel.entries.reduce(Int64(0)) { $0 + $1.size }
             : sel.reduce(Int64(0)) { $0 + $1.size }
 
         guard let (archive, options) = AddDialog.run(targets: sel.map { $0.fullPath },
                                                      inWorkingDir: panel.location.display,
-                                                     totalBytes: total, parent: window)
+                                                     totalBytes: total,
+                                                     itemCount: files.count,
+                                                     hasFolder: hasFolder,
+                                                     parent: window)
         else { return }
 
         operations.add(archive: archive, files: files,
                        workingDirectory: panel.location.display,
-                       options: options, totalBytes: total, parent: window)
+                       options: options, totalBytes: total, parent: window) {
+            // 新包是异步写出来的，不刷新的话列表里要手动按 F5 才看得到
+            panel.refresh(preserveSelection: false)
+        }
     }
 
     private func doTest() {
@@ -911,13 +939,14 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
     // MARK: 新建
 
     private func doCreateFolder() {
-        guard let name = DialogKit.prompt(S.menuCreateFolder, caption: S.createFolderName,
-                                          initial: S.createFolderDefault, parent: window) else { return }
-        if activePanel.location.isArchive {
-            DialogKit.alert(S.createFolderError, S.createFolderInArchive,
-                            parent: window)
+        // 先检查再问名字：原来顺序反了，归档里点新建会先让用户输完名字，
+        // 再告诉他这里不能建文件夹。
+        guard !activePanel.location.isArchive else {
+            DialogKit.alert(S.createFolderError, S.createFolderInArchive, parent: window)
             return
         }
+        guard let name = DialogKit.prompt(S.menuCreateFolder, caption: S.createFolderName,
+                                          initial: S.createFolderDefault, parent: window) else { return }
         let path = (activePanel.location.display as NSString).appendingPathComponent(name)
         do {
             try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: false)
@@ -942,12 +971,35 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
     // MARK: 拆分 / 合并 / 比较
 
     private func doSplit() {
-        guard let e = activePanel.selectedEntry, !e.isDir, !activePanel.location.isArchive else {
+        let panel = activePanel
+        guard let e = panel.selectedEntry, !e.isDir, !panel.location.isArchive else {
             DialogKit.alert(S.selectOneFile, "", parent: window); return
         }
         let size = max(e.size / 10, 1024 * 1024)
         guard let vol = SplitDialog.run(file: e.fullPath, size: size, parent: window), vol > 0 else { return }
-        operations.split(file: e.fullPath, volumeBytes: vol, parent: window)
+
+        // 同名分卷已存在时必须先清掉。7zz 对多分卷归档不支持增量更新，
+        // 直接再跑一次只会回 "Updating for multivolume archives is not implemented"，
+        // 用户看到的是一个没有任何提示价值的英文错误。
+        let stale = Operations.splitOutputs(for: e.fullPath)
+        if !stale.isEmpty {
+            guard DialogKit.confirm(S.splitTitle, S.splitReplaceExisting, parent: window) else { return }
+            for path in stale {
+                do {
+                    try FileManager.default.trashItem(at: URL(fileURLWithPath: path),
+                                                      resultingItemURL: nil)
+                } catch {
+                    DialogKit.alert(S.splitTitle,
+                                    "\(path): \(error.localizedDescription)",
+                                    style: .critical, parent: window)
+                    return
+                }
+            }
+        }
+
+        operations.split(file: e.fullPath, volumeBytes: vol, parent: window) {
+            panel.refresh(preserveSelection: false)
+        }
     }
 
     private func doCombine() {
@@ -1120,7 +1172,9 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
             o.password = panel.password ?? ""
             let total = urls.reduce(Int64(0)) { $0 + Operations.sizeOfItem(at: $1.path) }
             operations.add(archive: panel.location.root, files: names, workingDirectory: dir,
-                           options: o, totalBytes: total, parent: window)
+                           options: o, totalBytes: total, parent: window) {
+                panel.refresh(preserveSelection: false)
+            }
             return
         }
         // 拖进窗口 = 「我要压这些」。原来这里是 copyOrMove，等于从 Windows 版把
@@ -1130,23 +1184,32 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         // 按住 ⌘ 仍按老规矩复制，留一条退路（面板之间搬文件用得上）。
         // 用 ⌘ 不用 ⌥：⌥ 在文件管理器里通常是「复制」的备用键，语义正好反过来。
         if NSEvent.modifierFlags.contains(.command) {
-            operations.copyOrMove(urls, to: panel.location.display, move: false, parent: window)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { panel.refresh() }
+            operations.copyOrMove(urls, to: panel.location.display, move: false,
+                                  parent: window) {
+                panel.refresh(preserveSelection: false)
+            }
             return
         }
         guard let first = urls.first else { return }
         let dir = first.deletingLastPathComponent().path
         let total = urls.reduce(Int64(0)) { $0 + Operations.sizeOfItem(at: $1.path) }
+        let hasFolder = urls.contains {
+            (try? $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
+        }
         // 和右键「使用 7-Zip 压缩…」走的是同一个对话框、同一套默认参数
         guard let (archive, options) = AddDialog.run(targets: urls.map { $0.path },
                                                      inWorkingDir: dir,
-                                                     totalBytes: total, parent: window) else { return }
+                                                     totalBytes: total,
+                                                     itemCount: urls.count,
+                                                     hasFolder: hasFolder,
+                                                     parent: window) else { return }
         // 传绝对路径：拖进来的东西可能跨目录，只传文件名会让引擎在 dir 里找错文件。
         // 实测 7zz 对绝对路径只取末一段，所以包内存的仍是原来的名字。
         operations.add(archive: archive, files: urls.map { $0.path },
                        workingDirectory: dir, options: options,
-                       totalBytes: total, parent: window)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { panel.refresh() }
+                       totalBytes: total, parent: window) {
+            panel.refresh(preserveSelection: false)
+        }
     }
 
     private func archiveFormatForName(_ path: String) -> String {
@@ -1209,8 +1272,14 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         window?.makeKeyAndOrderFront(nil)
     }
 
+    /// 主窗口关闭时只收拾自己的登记，不退出 App。
+    ///
+    /// 原来这里无条件 NSApp.terminate：菜单「新窗口」开出来的第二个窗口，
+    /// 关掉它会把整个 App 连同另一个窗口一起杀掉。要不要退出交给
+    /// applicationShouldTerminateAfterLastWindowClosed（最后一个窗口关掉才退）。
     func windowWillClose(_ notification: Notification) {
-        NSApp.terminate(nil)
+        MainWindowController.extraWindows.removeAll { $0 === self }
+        onClose?()
     }
 }
 

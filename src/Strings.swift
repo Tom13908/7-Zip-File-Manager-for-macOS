@@ -242,6 +242,10 @@ enum S {
     static var addEncryptionMethod: String { L("Encryption method:") }
     static var addEncryptFileNames: String { L("Encrypt file names") }
     static var addPasswordsDoNotMatch: String { L("Passwords do not match") }
+    /// gzip / bzip2 / xz 一次只能装一个文件
+    static var addOneFileOnly: String {
+        L("This format can hold one file only. Select a single item, or choose 7z, Zip or Tar.")
+    }
 
     // Add 对话框里 Options 按钮弹出的那层（CompressOptionsDialog.rc）
     static var addGroupLinks: String { L("Links") }
@@ -380,6 +384,11 @@ enum S {
 
     static var splitTitle: String { L("Split File") }
     static var splitVolumeSize: String { L("Volume size, bytes:") }
+    /// 拆分前发现同名分卷已经存在。7zz 对多分卷归档不支持增量更新，
+    /// 必须先清掉旧的一组再重做，否则只会回一句 E_NOTIMPL。
+    static var splitReplaceExisting: String {
+        L("The volume files already exist. Replace them?")
+    }
     static var btnContinue: String { L("Continue") }
 
     // MARK: Add 对话框里分卷下拉的预设（只有带说明的那几个需要翻）
@@ -435,6 +444,7 @@ enum S {
     Toolbar
       Add        Pack the selected items into an archive (opens "Add to Archive")
       Extract    Unpack the selected archive, or the selected items inside an archive
+      Extract (Smart)  Unpack, choosing the destination automatically
       Test       Verify the integrity of the selected archive
       Copy       Copy the selected items to another folder
       Move       Move the selected items to another folder
@@ -451,7 +461,7 @@ enum S {
       F4             Edit with the default application
       F5 / F6        Copy to / Move to
       F7             Create a folder
-      Del            Delete
+      Cmd+Backspace  Delete
       F9             Toggle one/two panels
       Tab            Switch between panels
       Ctrl+1..4      Large icons / Small icons / List / Details
@@ -501,21 +511,28 @@ enum UpdateMode: Int, CaseIterable {
         }
     }
 
-    /// 对应 7zz 的参数（7-Zip 的 GUI 用 -u<mode> 表达同样的语义）
+    /// 对应 7zz 的 -u 参数。
     ///
-    /// sync 原先是 ["-u-", "-up1q1r1x1y1z1w1"]，实测必报
-    /// "incorrect update switch"：ArchiveCommandLine.cpp:869 的
-    /// kUpdatePairStateNotSupportedActions 禁止 r1，而且 -u- 会把后面
-    /// 那组动作整个作废。实测 -up0q3r2x2y2z1w2 才是真同步：
-    /// 归档独有的删除、磁盘改过的更新、磁盘新增的加入、两边都有的保留。
-    /// 注意 freshen 目前用的是同一组参数，实测效果也是同步；
-    /// 这是既有问题，本次排查没有动它。
+    /// 四种模式必须和 7-Zip GUI 的 k_ActionSet_* 一一对应，否则菜单文字说的
+    /// 和实际做的事是两回事。字母顺序 p q r x y z w 对应 UpdateAction.h 的
+    /// 七个状态，数字 0 忽略 / 1 保留原件 / 2 用磁盘内容 / 3 记成删除标记。
+    ///   0 未匹配   1 仅归档有   2 仅磁盘有   3 归档更新   4 归档更旧
+    ///   5 时间相同  6 时间无法比较
+    /// GUI 的动作表（UpdateAction.cpp）：
+    ///   Add     1 1 2 2 2 2 2  → 一律用磁盘内容覆盖
+    ///   Update  1 1 2 1 2 1 2  → 归档更新或相同时保留归档
+    ///   Freshen 1 1 0 1 2 1 2  → 只更新已存在的，不加入新文件
+    ///   Sync    1 0 2 1 2 1 2  → 额外丢掉已从磁盘消失的条目
+    ///
+    /// 原来的 add 用 -u-，实测等于「什么都不做」：7zz 把归档自身更新关掉、
+    /// 连新文件都不写。原来 sync/freshen 共用 -up0q3r2x2y2z1w2，p0 会把
+    /// 未选中的条目一起删掉 —— 只同步一个子目录会清空归档里其它内容。
     var arguments: [String] {
         switch self {
-        case .add: return ["-u-"]          // 只加新文件，不动已存在的
-        case .update: return []            // 默认：更新已存在 + 追加新文件
-        case .freshen: return ["-up0q3r2x2y2z1w2"]
-        case .sync: return ["-up0q3r2x2y2z1w2"]
+        case .add: return ["-up1q1r2x2y2z2w2"]
+        case .update: return ["-up1q1r2x1y2z1w2"]
+        case .freshen: return ["-up1q1r0x1y2z1w2"]
+        case .sync: return ["-up1q0r2x1y2z1w2"]
         }
     }
 }
@@ -549,13 +566,18 @@ enum ExtractOverwriteMode: Int, CaseIterable {
     /// 接到 /dev/null；原来 ask 返回 nil 却照样带 -y，等于「全部答 Yes」，
     /// 用户看到的是静默覆盖。现在由 Operations.extract 在启动前做一次
     /// 冲突预检并弹窗，再把用户的选择换成下面四种之一。
+    ///
+    /// -aou 是 rename extracting file（改新解出来的那个），-aot 是
+    /// rename existing file（改目标目录里原有的那个）。这两个原来写反了：
+    /// 选「Auto rename」时被改名的却是原文件，「Auto rename existing files」
+    /// 反而保留原文件、改新文件。
     var argument: String? {
         switch self {
         case .ask: return nil
         case .overwrite: return "-aoa"
         case .skip: return "-aos"
-        case .rename: return "-aot"
-        case .renameExisting: return "-aou"
+        case .rename: return "-aou"
+        case .renameExisting: return "-aot"
         }
     }
 }

@@ -33,9 +33,9 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.04</string>
+	<string>0.05</string>
 	<key>CFBundleVersion</key>
-	<string>0.04</string>
+	<string>0.05</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>LSApplicationCategoryType</key>
@@ -47,7 +47,7 @@
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>7-Zip 26.03 (C) Igor Pavlov. GUI front end for macOS v0.04.</string>
+	<string>7-Zip 26.03 (C) Igor Pavlov. GUI front end for macOS v0.05.</string>
 	<key>NSSupportsAutomaticTermination</key>
 	<false/>
 	<key>NSSupportsSuddenTermination</key>
@@ -117,6 +117,7 @@
 					<string>chq</string>
 					<string>chw</string>
 					<string>cpio</string>
+					<string>deb</string>
 					<string>dmg</string>
 					<string>doc</string>
 					<string>docx</string>
@@ -167,10 +168,13 @@
 					<string>swm</string>
 					<string>tar</string>
 					<string>taz</string>
+					<string>tbz</string>
 					<string>tbz2</string>
 					<string>tgz</string>
+					<string>tpz</string>
 					<string>txz</string>
 					<string>tzst</string>
+					<string>udeb</string>
 					<string>udf</string>
 					<string>uefif</string>
 					<string>vhd</string>

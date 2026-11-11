@@ -115,6 +115,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             ?? Location(root: Settings.shared.effectiveHomePath)
         let wc = MainWindowController(initialLocation: loc)
         mainWindow = wc
+        // 关掉之后必须把这里置空：否则点 Dock 图标（applicationShouldHandleReopen）
+        // 会拿着一个已经关掉的窗口去 makeKeyAndOrderFront，界面上什么都不会发生。
+        wc.onClose = { [weak self, weak wc] in
+            guard let self, let wc, self.mainWindow === wc else { return }
+            self.mainWindow = nil
+        }
         wc.showWindow(nil)
         NSApp.activate(ignoringOtherApps: true)
         return wc

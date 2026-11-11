@@ -29,7 +29,13 @@ OUT = ROOT / "resources" / "archive_types.json"
 # 从格式名往后逐个吃「像扩展名」的 token，遇到第一个不像的就停——那里就是签名的开头。
 FLAGS_COLS = 26
 EXT_TOKEN = re.compile(r"^[a-z0-9][a-z0-9_+-]{1,11}$")  # 至少两位，可数字开头（"7z"）
-EXT_SINGLE = {"z"}  # 单字母扩展名，只有 z 是真的
+# 单字母扩展名。z 是真的（.Z 压缩包）；a 来自 Ar 那一行
+# （`Ar ar a deb udeb lib`），它后面才是签名 `! < a r c h >`——
+# 不认 a 就会在它那儿提前 break，deb / udeb 全丢。
+EXT_SINGLE = {"z", "a"}
+# tar 系扩展名后面跟一个 `(.tar)` 标记（`gz gzip tgz (.tar) tpz (.tar)`），
+# 不是签名。跳过标记继续吃，否则 tpz / tbz / txz 会被截掉。
+EXT_TAR_MARK = "(."
 
 # 扩展名 -> 图标名。图标来自 Archive/Icons/*.ico，没对应图标的用通用图标。
 ICON_ALIAS = {
@@ -37,8 +43,8 @@ ICON_ALIAS = {
     "tar": "tar", "gz": "gz", "tgz": "tar", "bz2": "bz2", "tbz": "tar", "tbz2": "tar",
     "xz": "xz", "txz": "tar", "lzma": "lzma", "zst": "zst", "z": "z", "lzh": "lzh",
     "rar": "rar", "cab": "cab", "iso": "iso", "img": "iso", "wim": "wim", "dmg": "dmg",
-    "xar": "xar", "cpio": "cpio", "rpm": "rpm", "deb": "deb", "arj": "arj",
-    "lz": "lzma", "br": "lzma", "vhd": "vhd", "vmdk": "vhd", "vdi": "vhd",
+    "xar": "xar", "cpio": "cpio", "rpm": "rpm", "deb": "deb", "udeb": "deb", "arj": "arj",
+    "tpz": "tar", "taz": "tar", "lz": "lzma", "br": "lzma", "vhd": "vhd", "vmdk": "vhd", "vdi": "vhd",
     "msi": "cab", "doc": "zip", "xls": "zip", "ppt": "zip",
 }
 
@@ -90,6 +96,8 @@ def parse_formats(text: str) -> dict:
 
         exts = []
         for tok in parts[1:]:
+            if tok.startswith(EXT_TAR_MARK):
+                continue  # `(.tar)`：描述标记，说明前面的扩展名其实是 tar
             if EXT_TOKEN.fullmatch(tok) or tok in EXT_SINGLE:
                 exts.append(tok)
             else:

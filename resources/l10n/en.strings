@@ -233,6 +233,7 @@
 "Test Archive" = "Test Archive";
 "Testing" = "Testing";
 "The system cannot find the path specified:" = "The system cannot find the path specified:";
+"This format can hold one file only. Select a single item, or choose 7z, Zip or Tar." = "This format can hold one file only. Select a single item, or choose 7z, Zip or Tar.";
 "Time" = "Time";
 "Toolbars" = "Toolbars";
 "Tools" = "Tools";
@@ -258,7 +259,7 @@
 "archive time = latest" = "archive time = latest";
 "creation time" = "creation time";
 "hard links" = "hard links";
-"help.text" = "7-Zip File Manager — Help\n\nToolbar\n  Add        Pack the selected items into an archive (opens \"Add to archive\")\n  Extract    Unpack the selected archive, or the selected items inside it\n  Test       Verify the integrity of the selected archive\n  Copy       Copy the selected items to another folder\n  Move       Move the selected items to another folder\n  Delete     Move to Trash (inside an archive, remove from the archive)\n  Info       Show properties\n\nKeyboard\n  Enter          Open / descend\n  Ctrl+PgDn      Enter the selected archive\n  Shift+Enter    Open with the default application\n  Backspace      Up one level\n  F2             Rename\n  F3 / Space     View the file contents\n  F4             Edit with the default application\n  F5 / F6        Copy to / Move to\n  F7             Create a folder\n  Del            Delete\n  F9             Toggle one/two panels\n  Tab            Switch between panels\n  Ctrl+1..4      Large icons / Small icons / List / Details\n  Cmd+R          Refresh\n  Cmd+A          Select all\n  Cmd+I          Properties\n\nInside an archive\n  Double-click a folder to descend into it; double-click a nested archive to\n  unpack it into a temporary folder and open it.\n\nContext menu\n  Right-click the file list for file operations; right-click a column header\n  to choose which columns to show and how to sort.";
+"help.text" = "7-Zip File Manager — Help\n\nToolbar\n  Add              Pack the selected items into an archive (opens \"Add to archive\")\n  Extract          Unpack the selected archive, or the selected items inside it\n  Extract (Smart)  Unpack, choosing the destination automatically\n  Test             Verify the integrity of the selected archive\n  Copy             Copy the selected items to another folder\n  Move             Move the selected items to another folder\n  Delete           Move to Trash (inside an archive, remove from the archive)\n  Info             Show properties\n\nKeyboard\n  Enter          Open / descend\n  Ctrl+PgDn      Enter the selected archive\n  Shift+Enter    Open with the default application\n  Backspace      Up one level\n  F2             Rename\n  F3 / Space     View the file contents\n  F4             Edit with the default application\n  F5 / F6        Copy to / Move to\n  F7             Create a folder\n  Cmd+Backspace  Delete\n  F9             Toggle one/two panels\n  Tab            Switch between panels\n  Ctrl+1..4      Large icons / Small icons / List / Details\n  Cmd+R          Refresh\n  Cmd+A          Select all\n  Cmd+I          Properties\n\nInside an archive\n  Double-click a folder to descend into it; double-click a nested archive to\n  unpack it into a temporary folder and open it.\n\nContext menu\n  Right-click the file list for file operations; right-click a column header\n  to choose which columns to show and how to sort.";
 "iNode" = "iNode";
 "items" = "items";
 "keep access time" = "keep access time";
@@ -285,3 +286,4 @@
 "Choose another name" = "Choose another name";
 "Volume size must be a number with an optional k, m or g suffix (for example 100M)." = "Volume size must be a number with an optional k, m or g suffix (for example 100M).";
 "Extracting without paths will overwrite files that share the same name. Continue?" = "Extracting without paths will overwrite files that share the same name. Continue?";
+"The volume files already exist. Replace them?" = "The volume files already exist. Replace them?";

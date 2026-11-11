@@ -12,7 +12,11 @@
    "apm"
   ],
   "Ar": [
-   "ar"
+   "ar",
+   "a",
+   "deb",
+   "udeb",
+   "lib"
   ],
   "Arj": [
    "arj"
@@ -221,12 +225,15 @@
   "bzip2": [
    "bz2",
    "bzip2",
-   "tbz2"
+   "tbz2",
+   "tbz"
   ],
   "gzip": [
    "gz",
    "gzip",
-   "tgz"
+   "tgz",
+   "tpz",
+   "apk"
   ],
   "lzma": [
    "lzma"
@@ -285,6 +292,7 @@
   "chq",
   "chw",
   "cpio",
+  "deb",
   "dmg",
   "doc",
   "docx",
@@ -335,10 +343,13 @@
   "swm",
   "tar",
   "taz",
+  "tbz",
   "tbz2",
   "tgz",
+  "tpz",
   "txz",
   "tzst",
+  "udeb",
   "udf",
   "uefif",
   "vhd",
@@ -374,6 +385,7 @@
   "chq": "7z",
   "chw": "7z",
   "cpio": "cpio",
+  "deb": "deb",
   "dmg": "dmg",
   "doc": "zip",
   "docx": "zip",
@@ -423,11 +435,14 @@
   "rpm": "rpm",
   "swm": "wim",
   "tar": "tar",
-  "taz": "z",
+  "taz": "tar",
+  "tbz": "tar",
   "tbz2": "tar",
   "tgz": "tar",
+  "tpz": "tar",
   "txz": "tar",
   "tzst": "7z",
+  "udeb": "deb",
   "udf": "7z",
   "uefif": "7z",
   "vhd": "vhd",

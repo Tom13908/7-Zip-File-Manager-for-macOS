@@ -40,34 +40,36 @@ struct AddFormatSpec {
     let multiThread: Bool
     let encrypt: Bool
     let encryptFileNames: Bool
+    /// gzip / bzip2 / xz 这类单流格式一次只能装一个文件，多选必报 E_INVALIDARG。
+    let singleFile: Bool
 
     /// 能创建的就这 8 种（zstd 在引擎里返回 E_NOTIMPL，也没进 g_Formats）。
     /// 格式下拉带 CBS_SORT，所以显示顺序按名字排。
     static let all: [AddFormatSpec] = [
         AddFormatSpec(name: "7z", arcType: "7z", levels: [0, 1, 3, 5, 7, 9],
                       methods: ["LZMA2", "LZMA", "PPMd", "BZip2"], ext: "7z",
-                      solid: true, multiThread: true, encrypt: true, encryptFileNames: true),
+                      solid: true, multiThread: true, encrypt: true, encryptFileNames: true, singleFile: false),
         AddFormatSpec(name: "BZip2", arcType: "bzip2", levels: [1, 3, 5, 7, 9],
                       methods: ["BZip2"], ext: "bz2",
-                      solid: false, multiThread: true, encrypt: false, encryptFileNames: false),
+                      solid: false, multiThread: true, encrypt: false, encryptFileNames: false, singleFile: true),
         AddFormatSpec(name: "GZip", arcType: "gzip", levels: [1, 5, 7, 9],
                       methods: ["Deflate"], ext: "gz",
-                      solid: false, multiThread: false, encrypt: false, encryptFileNames: false),
+                      solid: false, multiThread: false, encrypt: false, encryptFileNames: false, singleFile: true),
         AddFormatSpec(name: "Hash", arcType: "hash", levels: [],
                       methods: ["SHA256", "SHA1"], ext: "sha256",
-                      solid: false, multiThread: false, encrypt: false, encryptFileNames: false),
+                      solid: false, multiThread: false, encrypt: false, encryptFileNames: false, singleFile: false),
         AddFormatSpec(name: "Tar", arcType: "tar", levels: [0],
                       methods: ["GNU", "POSIX"], ext: "tar",
-                      solid: false, multiThread: false, encrypt: false, encryptFileNames: false),
+                      solid: false, multiThread: false, encrypt: false, encryptFileNames: false, singleFile: false),
         AddFormatSpec(name: "wim", arcType: "wim", levels: [0],
                       methods: [], ext: "wim",
-                      solid: false, multiThread: false, encrypt: false, encryptFileNames: false),
+                      solid: false, multiThread: false, encrypt: false, encryptFileNames: false, singleFile: false),
         AddFormatSpec(name: "xz", arcType: "xz", levels: [1, 3, 5, 7, 9],
                       methods: ["LZMA2"], ext: "xz",
-                      solid: true, multiThread: true, encrypt: false, encryptFileNames: false),
+                      solid: true, multiThread: true, encrypt: false, encryptFileNames: false, singleFile: true),
         AddFormatSpec(name: "Zip", arcType: "zip", levels: [0, 1, 3, 5, 7, 9],
                       methods: ["Deflate", "Deflate64", "BZip2", "LZMA", "PPMd"], ext: "zip",
-                      solid: false, multiThread: true, encrypt: true, encryptFileNames: false),
+                      solid: false, multiThread: true, encrypt: true, encryptFileNames: false, singleFile: false),
     ]
 
     static func named(_ n: String) -> AddFormatSpec {
@@ -260,10 +262,12 @@ final class AddDialog {
     }
 
     static func run(targets: [String], inWorkingDir: String, totalBytes: Int64,
+                    itemCount: Int, hasFolder: Bool,
                     parent: NSWindow?) -> (String, AddOptions)? {
         _ = totalBytes
         let ctrl = AddDialogController(workingDirectory: inWorkingDir,
-                                       baseName: defaultName(targets: targets))
+                                       baseName: defaultName(targets: targets),
+                                       itemCount: itemCount, hasFolder: hasFolder)
         return ctrl.runModal(parent: parent)
     }
 }
@@ -272,6 +276,11 @@ private final class AddDialogController {
 
     private var folder: String
     private var name: String
+    /// 这次要压进去的条目数（不是 targets.count：全选时 targets 是空的）
+    private let itemCount: Int
+    private let hasFolder: Bool
+    /// gzip / bzip2 / xz 只收「一个普通文件」：多选和文件夹都会被引擎回 E_INVALIDARG
+    private var singleFileBlocked: Bool { itemCount > 1 || hasFolder }
 
     private var spec = AddFormatSpec.named("7z")
     private var level = CompressionLevel.normal
@@ -316,9 +325,11 @@ private final class AddDialogController {
     private var threadChoices: [Choice] = []
     private var encChoices: [Choice] = []
 
-    init(workingDirectory: String, baseName: String) {
+    init(workingDirectory: String, baseName: String, itemCount: Int, hasFolder: Bool) {
         self.folder = workingDirectory
         self.name = "\(baseName).7z"
+        self.itemCount = itemCount
+        self.hasFolder = hasFolder
     }
 
     // MARK: 跑起来
@@ -402,6 +413,11 @@ private final class AddDialogController {
         // 用户看不出是这一格填错了，所以在这里先挡下来。
         if !o.volumeSize.isEmpty, !Self.validVolumeSize(o.volumeSize) {
             DialogKit.alert(S.addTitle, S.invalidVolumeSize, style: .warning, parent: parent)
+            return nil
+        }
+        // formatChanged 已经拦过一道，这里兜底（初始格式是 7z，理论上到不了）
+        if spec.singleFile && singleFileBlocked {
+            DialogKit.alert(S.addTitle, S.addOneFileOnly, style: .warning, parent: parent)
             return nil
         }
         return (archive, o)
@@ -588,6 +604,14 @@ private final class AddDialogController {
         guard let newName = formatCombo.titleOfSelectedItem else { return }
         let old = spec
         spec = AddFormatSpec.named(newName)
+        // 单流格式一次只能装一个文件。多选时选到它就当场拦下来并退回原格式，
+        // 免得填完一堆参数、点确定才被引擎的 E_INVALIDARG 顶回来。
+        if spec.singleFile && singleFileBlocked {
+            spec = old
+            formatCombo.selectItem(withTitle: old.name)
+            DialogKit.alert(S.addTitle, S.addOneFileOnly, style: .warning, parent: nil)
+            return
+        }
         // 归档名跟着换扩展名，但只在用户没改过扩展名的时候
         let current = nameCombo.stringValue
         let stem = (current as NSString).deletingPathExtension

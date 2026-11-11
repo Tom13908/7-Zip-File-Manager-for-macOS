@@ -233,6 +233,7 @@
 "Test Archive" = "測試壓縮檔";
 "Testing" = "測試";
 "The system cannot find the path specified:" = "系統找不到指定的路徑:";
+"This format can hold one file only. Select a single item, or choose 7z, Zip or Tar." = "這種格式只能放一個檔案。請只選一項，或改用 7z / Zip / Tar。";
 "Time" = "時間";
 "Toolbars" = "工具列";
 "Tools" = "工具";
@@ -258,7 +259,7 @@
 "archive time = latest" = "壓縮檔時間 = 最新";
 "creation time" = "建立時間";
 "hard links" = "硬連結";
-"help.text" = "7-Zip File Manager — 使用說明\n\n工具列\n  Add        把選取項目打包成壓縮檔（開啟「Add to archive」對話框）\n  Extract    解壓縮選取的壓縮檔，或在壓縮檔內解壓縮選取的項目\n  Test       檢查壓縮檔的完整性\n  Copy       把選取項目複製到另一個資料夾\n  Move       把選取項目移動到另一個資料夾\n  Delete     移到垃圾桶（在壓縮檔內則從壓縮檔中移除）\n  Info       檢視內容\n\n鍵盤\n  Enter         開啟 / 進入\n  Ctrl+PgDn     進入選取的壓縮檔\n  Shift+Enter   用系統預設程式開啟\n  Backspace     回到上一層\n  F2            重新命名\n  F3 / 空白鍵   檢視檔案內容\n  F4            用預設程式編輯\n  F5 / F6       複製到 / 移動到\n  F7            新增資料夾\n  Del           刪除\n  F9            單／雙面板切換\n  Tab           在左右面板之間切換\n  Ctrl+1..4     大圖示 / 小圖示 / 清單 / 詳細資料\n  Cmd+R         重新整理\n  Cmd+A         全選\n  Cmd+I         內容\n\n在壓縮檔內\n  按兩下資料夾可以繼續往下層；按兩下裡面的壓縮檔會把它解到暫存資料夾後開啟。\n\n右鍵選單\n  在檔案清單上按右鍵是檔案操作；在欄標題上按右鍵可以選擇顯示哪些欄、以及排序方式。";
+"help.text" = "7-Zip File Manager — 使用說明\n\n工具列\n  Add             把選取項目打包成壓縮檔（開啟「Add to archive」對話框）\n  Extract         解壓縮選取的壓縮檔，或在壓縮檔內解壓縮選取的項目\n  解壓縮（智慧）  自動決定解壓縮位置後解壓縮\n  Test            檢查壓縮檔的完整性\n  Copy            把選取項目複製到另一個資料夾\n  Move            把選取項目移動到另一個資料夾\n  Delete          移到垃圾桶（在壓縮檔內則從壓縮檔中移除）\n  Info            檢視內容\n\n鍵盤\n  Enter         開啟 / 進入\n  Ctrl+PgDn     進入選取的壓縮檔\n  Shift+Enter   用系統預設程式開啟\n  Backspace     回到上一層\n  F2            重新命名\n  F3 / 空白鍵   檢視檔案內容\n  F4            用預設程式編輯\n  F5 / F6       複製到 / 移動到\n  F7            新增資料夾\n  Cmd+Backspace  刪除\n  F9            單／雙面板切換\n  Tab           在左右面板之間切換\n  Ctrl+1..4     大圖示 / 小圖示 / 清單 / 詳細資料\n  Cmd+R         重新整理\n  Cmd+A         全選\n  Cmd+I         內容\n\n在壓縮檔內\n  按兩下資料夾可以繼續往下層；按兩下裡面的壓縮檔會把它解到暫存資料夾後開啟。\n\n右鍵選單\n  在檔案清單上按右鍵是檔案操作；在欄標題上按右鍵可以選擇顯示哪些欄、以及排序方式。";
 "iNode" = "iNode";
 "items" = "項";
 "keep access time" = "保留存取時間";
@@ -285,3 +286,4 @@
 "Choose another name" = "改用其他名稱";
 "Volume size must be a number with an optional k, m or g suffix (for example 100M)." = "分卷大小必須是數字，可以帶 k、m 或 g 後綴（例如 100M）。";
 "Extracting without paths will overwrite files that share the same name. Continue?" = "不使用路徑解壓會覆蓋同名檔案。仍要繼續嗎？";
+"The volume files already exist. Replace them?" = "分卷檔案已存在。要取代它們嗎？";

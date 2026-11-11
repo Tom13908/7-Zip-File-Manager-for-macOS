@@ -233,6 +233,7 @@
 "Test Archive" = "校验归档";
 "Testing" = "正在测试";
 "The system cannot find the path specified:" = "系统找不到指定的路径:";
+"This format can hold one file only. Select a single item, or choose 7z, Zip or Tar." = "这种格式只能放一个文件。请只选一项，或改用 7z / Zip / Tar。";
 "Time" = "时间";
 "Toolbars" = "工具栏";
 "Tools" = "工具";
@@ -258,7 +259,7 @@
 "archive time = latest" = "归档时间 = 最新";
 "creation time" = "创建时间";
 "hard links" = "硬链接";
-"help.text" = "7-Zip File Manager — 使用说明\n\n工具条\n  Add        把选中项打包成归档（弹出「Add to archive」对话框）\n  Extract    解压选中的归档，或在归档里解压选中的条目\n  Test       校验归档的完整性\n  Copy       把选中项复制到另一个文件夹\n  Move       把选中项移动到另一个文件夹\n  Delete     移到废纸篓（在归档里则从归档中移除）\n  Info       查看属性\n\n键盘\n  Enter         打开 / 进入\n  Ctrl+PgDn     进入选中的归档\n  Shift+Enter   用系统默认程序打开\n  Backspace     返回上一级\n  F2            改名\n  F3 / 空格     查看文件内容\n  F4            用默认程序编辑\n  F5 / F6       复制到 / 移动到\n  F7            新建文件夹\n  Del           删除\n  F9            单/双面板切换\n  Tab           在左右面板之间切换\n  Ctrl+1..4     大图标 / 小图标 / 列表 / 详细资料\n  Cmd+R         刷新\n  Cmd+A         全选\n  Cmd+I         属性\n\n在归档里\n  双击文件夹可以继续往下钻；双击里面的压缩包会把它解到临时目录后打开。\n\n右键菜单\n  在文件列表上右键是文件操作；在列标题上右键可以选择显示哪些列、以及排序方式。";
+"help.text" = "7-Zip File Manager — 使用说明\n\n工具条\n  Add           把选中项打包成归档（弹出「Add to archive」对话框）\n  Extract       解压选中的归档，或在归档里解压选中的条目\n  解压（智能）  自动决定解压位置后解压\n  Test          校验归档的完整性\n  Copy          把选中项复制到另一个文件夹\n  Move          把选中项移动到另一个文件夹\n  Delete        移到废纸篓（在归档里则从归档中移除）\n  Info          查看属性\n\n键盘\n  Enter         打开 / 进入\n  Ctrl+PgDn     进入选中的归档\n  Shift+Enter   用系统默认程序打开\n  Backspace     返回上一级\n  F2            改名\n  F3 / 空格     查看文件内容\n  F4            用默认程序编辑\n  F5 / F6       复制到 / 移动到\n  F7            新建文件夹\n  Cmd+Backspace  删除\n  F9            单/双面板切换\n  Tab           在左右面板之间切换\n  Ctrl+1..4     大图标 / 小图标 / 列表 / 详细资料\n  Cmd+R         刷新\n  Cmd+A         全选\n  Cmd+I         属性\n\n在归档里\n  双击文件夹可以继续往下钻；双击里面的压缩包会把它解到临时目录后打开。\n\n右键菜单\n  在文件列表上右键是文件操作；在列标题上右键可以选择显示哪些列、以及排序方式。";
 "iNode" = "索引节点";
 "items" = "项";
 "keep access time" = "保留访问时间";
@@ -285,3 +286,4 @@
 "Choose another name" = "换一个名字";
 "Volume size must be a number with an optional k, m or g suffix (for example 100M)." = "分卷大小必须是数字，可以带 k、m 或 g 后缀（例如 100M）。";
 "Extracting without paths will overwrite files that share the same name. Continue?" = "不使用路径解压会覆盖同名文件。仍要继续吗？";
+"The volume files already exist. Replace them?" = "分卷文件已存在。要替换它们吗？";

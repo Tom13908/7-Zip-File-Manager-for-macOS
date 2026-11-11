@@ -192,9 +192,15 @@ final class ServicesProvider: NSObject {
         guard let files = serving("compressWithDialog", pasteboard) else { return }
         let dir = files[0].deletingLastPathComponent().path
         let total = files.reduce(Int64(0)) { $0 + Operations.sizeOfItem(at: $1.path) }
+        let hasFolder = files.contains {
+            (try? $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
+        }
         guard let (archive, options) = AddDialog.run(targets: files.map { $0.path },
                                                      inWorkingDir: dir,
-                                                     totalBytes: total, parent: nil) else { return }
+                                                     totalBytes: total,
+                                                     itemCount: files.count,
+                                                     hasFolder: hasFolder,
+                                                     parent: nil) else { return }
         let wc = ServicesProvider.operations.add(archive: archive,
                                                  files: files.map { $0.lastPathComponent },
                                                  workingDirectory: dir, options: options,

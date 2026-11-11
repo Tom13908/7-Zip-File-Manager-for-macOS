@@ -759,6 +759,7 @@ final class FilePanelView: NSView, NSTableViewDataSource, NSTableViewDelegate,
         case "\u{F705}":                              // F2：改名
             if hasAlt { perform(.properties) } else { perform(.rename) }
             return true
+        case " ": perform(.view); return true         // 空格：查看内容（同 F3）
         case "\u{F706}": perform(.view); return true            // F3
         case "\u{F707}":                              // F4：编辑；Shift+F4：新建文件
             if modifiers.contains(.shift) { perform(.createFile) } else { perform(.edit) }

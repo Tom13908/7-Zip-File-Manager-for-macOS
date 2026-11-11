@@ -233,6 +233,7 @@
 "Test Archive" = "압축 파일 테스트";
 "Testing" = "검사 중";
 "The system cannot find the path specified:" = "시스템이 지정된 경로를 찾을 수 없습니다:";
+"This format can hold one file only. Select a single item, or choose 7z, Zip or Tar." = "이 형식에는 파일을 하나만 담을 수 있습니다. 항목을 하나만 선택하거나 7z, Zip, Tar를 선택하십시오.";
 "Time" = "시간";
 "Toolbars" = "도구 모음";
 "Tools" = "도구";
@@ -258,7 +259,7 @@
 "archive time = latest" = "압축 파일 시간 = 최신";
 "creation time" = "만든 날짜";
 "hard links" = "하드 링크";
-"help.text" = "7-Zip File Manager — 사용 설명\n\n도구 모음\n  Add        선택한 항목을 압축 파일로 묶습니다 (\"Add to archive\" 대화 상자를 엽니다)\n  Extract    선택한 압축 파일, 또는 압축 파일 안에서 선택한 항목을 풉니다\n  Test       선택한 압축 파일의 무결성을 검사합니다\n  Copy       선택한 항목을 다른 폴더로 복사합니다\n  Move       선택한 항목을 다른 폴더로 이동합니다\n  Delete     휴지통으로 이동합니다 (압축 파일 안에서는 압축 파일에서 제거합니다)\n  Info       속성을 봅니다\n\n키보드\n  Enter         열기 / 안으로 들어가기\n  Ctrl+PgDn     선택한 압축 파일 안으로 들어가기\n  Shift+Enter   기본 프로그램으로 열기\n  Backspace     위로 한 단계\n  F2            이름 바꾸기\n  F3 / Space    파일 내용 보기\n  F4            기본 프로그램으로 편집\n  F5 / F6       복사 / 이동\n  F7            폴더 만들기\n  Del           삭제\n  F9            한 패널 / 두 패널 전환\n  Tab           좌우 패널 전환\n  Ctrl+1..4     큰 아이콘 / 작은 아이콘 / 목록 / 자세히\n  Cmd+R         새로 고침\n  Cmd+A         모두 선택\n  Cmd+I         속성\n\n압축 파일 안에서\n  폴더를 두 번 클릭하면 안으로 들어갑니다. 안에 있는 압축 파일을 두 번 클릭하면\n  임시 폴더에 푼 뒤 엽니다.\n\n상황에 맞는 메뉴\n  파일 목록에서 오른쪽 클릭하면 파일 작업, 열 머리글에서 오른쪽 클릭하면\n  표시할 열과 정렬 방식을 고를 수 있습니다.";
+"help.text" = "7-Zip File Manager — 사용 설명\n\n도구 모음\n  Add                선택한 항목을 압축 파일로 묶습니다 (\"Add to archive\" 대화 상자를 엽니다)\n  Extract            선택한 압축 파일, 또는 압축 파일 안에서 선택한 항목을 풉니다\n  압축 풀기(스마트)  대상 폴더를 자동으로 정해 압축을 풉니다\n  Test               선택한 압축 파일의 무결성을 검사합니다\n  Copy               선택한 항목을 다른 폴더로 복사합니다\n  Move               선택한 항목을 다른 폴더로 이동합니다\n  Delete             휴지통으로 이동합니다 (압축 파일 안에서는 압축 파일에서 제거합니다)\n  Info               속성을 봅니다\n\n키보드\n  Enter         열기 / 안으로 들어가기\n  Ctrl+PgDn     선택한 압축 파일 안으로 들어가기\n  Shift+Enter   기본 프로그램으로 열기\n  Backspace     위로 한 단계\n  F2            이름 바꾸기\n  F3 / Space    파일 내용 보기\n  F4            기본 프로그램으로 편집\n  F5 / F6       복사 / 이동\n  F7            폴더 만들기\n  Cmd+Backspace  삭제\n  F9            한 패널 / 두 패널 전환\n  Tab           좌우 패널 전환\n  Ctrl+1..4     큰 아이콘 / 작은 아이콘 / 목록 / 자세히\n  Cmd+R         새로 고침\n  Cmd+A         모두 선택\n  Cmd+I         속성\n\n압축 파일 안에서\n  폴더를 두 번 클릭하면 안으로 들어갑니다. 안에 있는 압축 파일을 두 번 클릭하면\n  임시 폴더에 푼 뒤 엽니다.\n\n상황에 맞는 메뉴\n  파일 목록에서 오른쪽 클릭하면 파일 작업, 열 머리글에서 오른쪽 클릭하면\n  표시할 열과 정렬 방식을 고를 수 있습니다.";
 "iNode" = "아이노드";
 "items" = "개 항목";
 "keep access time" = "액세스한 날짜 유지";
@@ -285,3 +286,4 @@
 "Choose another name" = "다른 이름 사용";
 "Volume size must be a number with an optional k, m or g suffix (for example 100M)." = "Volume size must be a number with an optional k, m or g suffix (for example 100M).";
 "Extracting without paths will overwrite files that share the same name. Continue?" = "Extracting without paths will overwrite files that share the same name. Continue?";
+"The volume files already exist. Replace them?" = "볼륨 파일이 이미 있습니다. 바꾸시겠습니까?";
