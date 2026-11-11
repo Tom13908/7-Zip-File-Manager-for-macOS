@@ -67,7 +67,7 @@ enum EngineError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .passwordRequired: return S.cantOpenEncrypted
-            .replacingOccurrences(of: "'{0}'", with: "")
+            .replacingOccurrences(of: " '{0}'", with: "")
             .replacingOccurrences(of: "{0}", with: "")
         case .notAnArchive(let p): return S.cantOpenArchive.replacingOccurrences(of: "{0}", with: p)
         case .failed(let m): return m

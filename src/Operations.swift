@@ -976,7 +976,7 @@ final class Operations {
             if text.contains("Enter password") || text.contains("Wrong password")
                 || text.contains("Cannot open encrypted") {
                 model.errors.append(S.cantOpenEncrypted
-                    .replacingOccurrences(of: "'{0}'", with: "")
+                    .replacingOccurrences(of: " '{0}'", with: "")
                     .replacingOccurrences(of: "{0}", with: ""))
                 return false
             }

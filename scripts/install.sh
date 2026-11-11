@@ -24,9 +24,14 @@ if [ -e "$DEST" ]; then
     read -r ans
     case "$ans" in
         y|Y)
-            # 同 build-app.sh：直接 rm -rf 一个 .app 会让系统往废纸篓塞副本
-            mv "$DEST" "$DEST_DIR/.old-app"
-            rm -rf "$DEST_DIR/.old-app"
+            # 同 build-app.sh：直接 rm -rf 一个 .app 会让系统往废纸篓塞副本。
+            # 临时名带 PID：固定叫 .old-app 的话，上一次没删干净时会把它整个
+            # 搬进那个旧目录（mv 到已存在的目录 = 放进目录里面），随后 ditto
+            # 又往原位写一份，看着像装成功了，其实还是旧版。
+            OLD="$DEST_DIR/.old-app.$$"
+            mv "$DEST" "$OLD"
+            rm -rf "$OLD" 2>/dev/null || trash "$OLD" 2>/dev/null \
+                || echo "    注意：$OLD 没删掉，回头自己清一下" >&2
             ;;
         *) echo "已取消"; exit 1 ;;
     esac

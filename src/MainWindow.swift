@@ -769,8 +769,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
             // 没有选归档，就看当前目录里有没有归档
             let all = panel.entries.filter { $0.isArchive }.map { $0.fullPath }
             guard !all.isEmpty else {
-                DialogKit.alert("7-Zip", S.cantOpenArchive.replacingOccurrences(of: "{0}", with: ""),
-                                parent: window)
+                DialogKit.alert("7-Zip", S.mustSelectArchives, parent: window)
                 return
             }
             archives = all
