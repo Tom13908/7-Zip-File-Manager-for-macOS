@@ -77,7 +77,7 @@ def fixture():
         f.write("solo")
     subprocess.run([SZZ, "a", os.path.join(FIX, "single.7z"), "solo.txt", "-bso0", "-bsp0"],
                    cwd=FIX, check=True)
-    # 多个顶层项、全是文件：智能解压不包 —— 直接摊在压缩包所在目录。
+    # 多个顶层项、全是文件：智能解压同样要新建一个与压缩包同名的文件夹。
     # 名字要和留在 fixture 里的 one.txt 错开，否则解出来是覆盖同名文件，
     # 目录列表看不出变化，这条用例就永远都能「通过」。
     for n in ("m1.txt", "m2.txt"):
@@ -125,10 +125,11 @@ def content():
     return sorted(os.listdir(FIX))
 
 
-def case(name, service, targets, expect_content, need_window=None):
+def case(name, service, targets, expect_content, need_window=None, expect_nested=None):
     """跑一个服务用例。
-    expect_content: 结束后 fixture 目录里应当出现的文件名（完整列表）
+    expect_content: 结束后 fixture 目录里应当出现的顶层名字（完整列表）
     need_window:    True/False —— 是否应当至少有一个窗口
+    expect_nested:  相对 fixture 的路径，用来确认落进了该进的文件夹
     """
     kill()
     fixture()
@@ -145,6 +146,11 @@ def case(name, service, targets, expect_content, need_window=None):
     report(name + "（文件动作）", ",".join(sorted(expect_content)),
            ",".join(added) if added else "（无新文件）",
            sorted(added) == sorted(expect_content))
+
+    for rel in (expect_nested or []):
+        p = os.path.join(FIX, rel)
+        report(name + "（落点）", rel, rel if os.path.exists(p) else "（缺失）",
+               os.path.exists(p))
 
     stray = [s for s, _ in ws if s in MAIN_SIZES]
     report(name + "（没弹主窗口）", "无 %s 尺寸的窗口" % MAIN_SIZES,
@@ -208,8 +214,9 @@ def main():
     case("Extract (Smart) 单目录", "Extract (Smart)", ["test.7z"], ["payload"])
     #   单个文件 -> 直接落在压缩包所在目录
     case("Extract (Smart) 单文件", "Extract (Smart)", ["single.7z"], ["solo.txt"])
-    #   多个顶层项、全是文件 -> 摊在压缩包所在目录，不新建文件夹
-    case("Extract (Smart) 多项全是文件", "Extract (Smart)", ["multi.7z"], ["m1.txt", "m2.txt"])
+    #   多个顶层项、全是文件 -> 同样新建一个与压缩包同名的文件夹
+    case("Extract (Smart) 多项全是文件", "Extract (Smart)", ["multi.7z"], ["multi"],
+         expect_nested=["multi/m1.txt", "multi/m2.txt"])
     #   多个顶层项、其中有目录 -> 新建一个与压缩包同名的文件夹
     case("Extract (Smart) 多项含目录", "Extract (Smart)", ["dirs.7z"], ["dirs"])
 

@@ -132,14 +132,15 @@ up-arrow in the address bar).
 Available from the Finder context menu, the third toolbar button, and the list context menu.  
 The destination is decided by the archive's top-level layout:
 
-| Top level inside the archive | Extracted to                                                         |
-| ---------------------------- | -------------------------------------------------------------------- |
-| A single file                | the archive's directory, with no wrapping folder                     |
-| A single folder              | the archive's directory, the folder lands as a whole                 |
-| Multiple top-level items     | a new "archive name" folder; if that name exists, "archive name (2)" |
+| Top level inside the archive                 | Extracted to                                                         |
+| -------------------------------------------- | -------------------------------------------------------------------- |
+| A single file                                | the archive's directory, with no wrapping folder                     |
+| A single folder                              | the archive's directory, the folder lands as a whole                 |
+| Multiple top-level items (files or folders)  | a new "archive name" folder; if that name exists, "archive name (2)" |
 
-The only difference from "Extract Here" is the third case: Extract Here lays the multiple  
-top-level items directly into the archive's directory.
+The count decides, not the kind: seven loose files at the top level get a folder just like
+seven folders do. The only difference from "Extract Here" is the third case: Extract Here
+lays the multiple top-level items directly into the archive's directory.
 
 If the archive's layout cannot be read (e.g. an encrypted archive with no password), the third  
 case is used — an extra folder level.
