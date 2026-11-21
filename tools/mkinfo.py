@@ -47,12 +47,13 @@ MIN_OS = "13.0"
 # 这里的**书写顺序不影响菜单顺序**：Finder 的服务子菜单是按「本地化后的那行
 # 显示文字」排序的（`localizedStandardCompare`），同一 App 的条目排成一组，
 # 组内按文字排。实测方式见 skills/macos-app-localization-services-menu。
-# 所以「Extract (Smart)」在中文界面排第一，靠的是「解压」这两个字，不是靠排在数组前面。
+# 中文按拼音排：「智能解压」(zhi) 落在「测试归档」(ce) 之后，是这一组里最后一条。
+# 想让某条靠前只能改译文，改数组顺序没用。
 #
 # 压缩只留一条：原来「Compress to 7z」「Compress to Zip」「Add to Archive…」
 # 三条做的都是同一件事，合并成一条带对话框的。
 SERVICES = [
-    ("extractSmart", "Extract (Smart)", "archive"),
+    ("extractSmart", "Smart Extract", "archive"),
     ("extractHere", "Extract Here", "archive"),
     ("extractToDialog", "Extract to…", "archive"),
     ("testArchive", "Test Archive", "archive"),

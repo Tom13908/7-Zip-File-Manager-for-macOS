@@ -211,14 +211,14 @@ def main():
 
     # 智能解压：包内结构决定落点（见 src/SmartExtract.swift）
     #   单个顶层目录 -> 那个目录整体落在压缩包所在目录
-    case("Extract (Smart) 单目录", "Extract (Smart)", ["test.7z"], ["payload"])
+    case("Smart Extract 单目录", "Smart Extract", ["test.7z"], ["payload"])
     #   单个文件 -> 直接落在压缩包所在目录
-    case("Extract (Smart) 单文件", "Extract (Smart)", ["single.7z"], ["solo.txt"])
+    case("Smart Extract 单文件", "Smart Extract", ["single.7z"], ["solo.txt"])
     #   多个顶层项、全是文件 -> 同样新建一个与压缩包同名的文件夹
-    case("Extract (Smart) 多项全是文件", "Extract (Smart)", ["multi.7z"], ["multi"],
+    case("Smart Extract 多项全是文件", "Smart Extract", ["multi.7z"], ["multi"],
          expect_nested=["multi/m1.txt", "multi/m2.txt"])
     #   多个顶层项、其中有目录 -> 新建一个与压缩包同名的文件夹
-    case("Extract (Smart) 多项含目录", "Extract (Smart)", ["dirs.7z"], ["dirs"])
+    case("Smart Extract 多项含目录", "Smart Extract", ["dirs.7z"], ["dirs"])
 
     # 弹出解压对话框（目标路径自己在对话框里选）
     case("Extract to…", "Extract to…", ["test.7z"], [], need_window=True)

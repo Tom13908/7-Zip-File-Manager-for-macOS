@@ -202,7 +202,7 @@
 			<key>NSMenuItem</key>
 			<dict>
 				<key>default</key>
-				<string>Extract (Smart)</string>
+				<string>Smart Extract</string>
 			</dict>
 			<key>NSMessage</key>
 			<string>extractSmart</string>

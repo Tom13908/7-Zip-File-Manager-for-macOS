@@ -801,7 +801,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         Settings.shared.lastExtractPath = o.destination
     }
 
-    /// 解压（智能）。落点由压缩包的顶层结构决定，规则见 SmartExtract。
+    /// 智能解压。落点由压缩包的顶层结构决定，规则见 SmartExtract。
     ///
     /// 已经在归档面板里时（`location.isArchive`）直接转给普通解压 —— 智能解压要判断的是
     /// 「这个包摊开长什么样」，而此刻用户看的就是摊开后的内容，再问一次没有意义，
@@ -824,7 +824,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         smartExtract(archives)
     }
 
-    /// 对一批归档逐个做智能解压。列表里点「解压（智能）」走这里，
+    /// 对一批归档逐个做智能解压。列表里点「智能解压」走这里，
     /// 自检通道（--automation 的 unzip）也走这里，保证测的就是用户点的那条路。
     func smartExtract(_ archives: [String]) {
         let panel = activePanel

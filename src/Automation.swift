@@ -391,7 +391,7 @@ enum Automation {
             say("ok dropped=\(paths.count)")
 
         case "unzip":
-            // 对给定的归档跑一次智能解压。走的和列表里点「解压（智能）」是同一条路
+            // 对给定的归档跑一次智能解压。走的和列表里点「智能解压」是同一条路
             // （wc.smartExtract），所以进度、落点规则、冲突处理都测得到。
             let targets = Array(parts.dropFirst())
             guard !targets.isEmpty else { say("err arg"); return }

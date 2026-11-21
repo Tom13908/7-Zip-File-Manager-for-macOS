@@ -26,9 +26,9 @@ enum S {
     static var btnInfo: String { L("Info") }
 
     /// 智能解压。工具栏按钮、列表右键菜单、Finder 服务三处共用这一条。
-    /// 这个名字同时是 Finder 服务菜单里的显示文字，而服务菜单是按显示文字排序的，
-    /// 所以「中文以『解压』开头」这件事是靠译文保证的，不能擅自改成别的开头。
-    static var extractSmart: String { L("Extract (Smart)") }
+    /// 这个名字同时是 Finder 服务菜单里的显示文字；服务菜单按显示文字排序，
+    /// 与 Info.plist 里的声明顺序无关（见 Services.swift 顶部说明）。
+    static var extractSmart: String { L("Smart Extract") }
 
     // MARK: 文件菜单（resource.rc: IDM_MENU）
 
@@ -442,14 +442,14 @@ enum S {
     7-Zip File Manager — Help
 
     Toolbar
-      Add        Pack the selected items into an archive (opens "Add to Archive")
-      Extract    Unpack the selected archive, or the selected items inside an archive
-      Extract (Smart)  Unpack, choosing the destination automatically
-      Test       Verify the integrity of the selected archive
-      Copy       Copy the selected items to another folder
-      Move       Move the selected items to another folder
-      Delete     Move to Trash (inside an archive, remove from the archive)
-      Info       Show properties
+      Add              Pack the selected items into an archive (opens "Add to Archive")
+      Extract          Unpack the selected archive, or the selected items inside an archive
+      Smart Extract    Unpack, choosing the destination automatically
+      Test             Verify the integrity of the selected archive
+      Copy             Copy the selected items to another folder
+      Move             Move the selected items to another folder
+      Delete           Move to Trash (inside an archive, remove from the archive)
+      Info             Show properties
 
     Keyboard
       Enter          Open / descend

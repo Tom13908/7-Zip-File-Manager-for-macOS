@@ -10,7 +10,7 @@ the GUI and interaction replicate the official Windows 7-Zip File Manager.
 Upstream 7-Zip ships only a command-line tool (`7zz`) on macOS. This project wraps the same  
 engine in a native AppKit interface, following the interaction model of the Windows 7-Zip  
 File Manager — the toolbar layout and the function keys (`F3`, `F4`, …) match it.  
-"Extract Smart" is a macOS-only addition; see below.
+"Smart Extract" is a macOS-only addition; see below.
 
 ![Main window](images/main.png)
 
@@ -19,7 +19,7 @@ File Manager — the toolbar layout and the function keys (`F3`, `F4`, …) matc
 **Formats** — everything the 7-Zip engine supports: 7z, zip, rar, tar, gz, bz2, xz, zst, iso,  
 dmg, cab, rpm, deb, apk, ipa, msi, docx, xlsx, and more.
 
-**Extract** — Extract Here / Extract To… / Extract Smart (decides whether to add a wrapping  
+**Extract** — Extract Here / Extract To… / Smart Extract (decides whether to add a wrapping  
 folder from the archive's top-level layout); extract individual entries while browsing an  
 archive.
 
@@ -35,7 +35,7 @@ or folders in from Finder opens the same panel.
 mask; test a whole archive; CRC32, CRC64, SHA-1, SHA-256, BLAKE2sp and other checksums; file  
 comparison; split and combine.
 
-**System integration** — 5 Finder services (Extract Smart, Extract Here, Extract To…, Add to  
+**System integration** — 5 Finder services (Smart Extract, Extract Here, Extract To…, Add to  
 Archive…, Test Archive); dropping items onto the window creates an archive, `⌘`-drop copies  
 instead; archive types are registered as an alternate handler, so your current default  
 application is left untouched.
@@ -85,7 +85,7 @@ Right-click an archive or any file; the menu should list these 5 items:
 
 | Menu item       | Appears when                   |
 | --------------- | ------------------------------ |
-| Extract Smart   | an archive is selected         |
+| Smart Extract   | an archive is selected         |
 | Extract Here    | an archive is selected         |
 | Extract To…     | an archive is selected         |
 | Add to Archive… | any file or folder is selected |
@@ -109,7 +109,7 @@ LSR=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.
 
 ### Interface
 
-Toolbar: Add / Extract / Extract Smart / Test / Copy / Move / Delete / Info; below it the  
+Toolbar: Add / Extract / Smart Extract / Test / Copy / Move / Delete / Info; below it the  
 address bar (up-arrow button on the left, path field on the right), the file list in the  
 middle, and a status bar at the bottom. The toolbar buttons are always enabled and never grey  
 out with the selection (matching the Windows version; enabled state only applies to the  
@@ -127,7 +127,7 @@ up-arrow in the address bar).
   version (the added "Show hidden items" is described below).
 - Commands in the `File` menu grey out with the selection.
 
-### Extract Smart
+### Smart Extract
 
 Available from the Finder context menu, the third toolbar button, and the list context menu.  
 The destination is decided by the archive's top-level layout:

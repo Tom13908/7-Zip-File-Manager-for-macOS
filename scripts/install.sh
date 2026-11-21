@@ -47,6 +47,11 @@ if [ -x "$LSR" ]; then
     "$LSR" -f "$DEST" >/dev/null 2>&1 || true
 fi
 
+# 服务菜单的缓存由 pbs 维护，它按 bundle 路径记住每条服务的显示文字。只跑
+# lsregister 不够：服务名改过（例如「Extract (Smart)」改成「Smart Extract」）时，
+# Finder 右键里还会显示旧名字，直到 pbs 重启。这里让它重建缓存，失败不影响安装。
+killall pbs 2>/dev/null || true
+
 cat <<'EOF'
 
 接下来两件事要手动做一次：
